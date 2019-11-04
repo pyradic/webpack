@@ -1,0 +1,11 @@
+{
+    "name": "pyro/webpack",
+    "description": "",
+    "license": "MIT",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Pyro\\Webpack\\": "src/"
+        }
+    }
+}
