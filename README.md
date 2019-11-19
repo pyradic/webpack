@@ -1,4 +1,4 @@
-# Pyro Webpacker
+# Pyro Webpack
 
 
 
@@ -14,17 +14,17 @@
   - 
 
 - root
-    - [package.json](../../../a.md#packagejson)
+    - [package.json](#packagejson)
     - composer.json
-    - [webpack.config.js](../../../a.md#webpackconfigjs)
+    - [webpack.config.js](#webpackconfigjs)
     - addons
     - core
         - anomaly
-            - [navigation-module](../../../a.md#navigation-module)
+            - [navigation-module](#navigation-module)
                 - lib
-                    - [NavigationModuleServiceProvider.js](../../../a.md#navigation-modulelibnavigationmoduleserviceproviderjs)
-                    - [index.scss](../../../a.md#navigation-modulelibindexscss)
-                    - [index.js](../../../a.md#navigation-modulelibindexjs)
+                    - [NavigationModuleServiceProvider.js](#navigation-modulelibnavigationmoduleserviceproviderjs)
+                    - [index.scss](#navigation-modulelibindexscss)
+                    - [index.js](#navigation-modulelibindexjs)
                 - resources
                     - js
                       - admin.js
@@ -32,7 +32,7 @@
                       - admin.css
                     - src
                       - NavigationModuleServiceProvider.php
-                    - [package.json](../../../a.md#navigation-modulepackagejson) = @anomaly/navigation-module
+                    - [package.json](#navigation-modulepackagejson) = @anomaly/navigation-module
         - pyrocms
             - accelerant-theme
                 - lib
