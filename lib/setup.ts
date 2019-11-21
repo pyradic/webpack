@@ -47,12 +47,14 @@ export function setupBase(options: SetupBaseOptions) {
     wp.resolveLoader.symlinks(true);
     wp.resolve.symlinks(true);
 
+
     wp.output
         .library([ namespace, '[addon:exportName]' ] as any)
         .libraryTarget('window')
         .filename('js/[name].js')
         .chunkFilename('js/[name].chunk.[id].js')
         .path(join(rootPath, 'public/assets'))
+        .publicPath('/assets')
     ;
 
     rules.css(wp);

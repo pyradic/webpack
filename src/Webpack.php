@@ -2,20 +2,15 @@
 
 namespace Pyro\Webpack;
 
-use Illuminate\Support\Collection;
+use Collective\Html\HtmlBuilder;
 use InvalidArgumentException;
+use Pyro\Webpack\Package\EntryCollection;
 
 class Webpack
 {
-    /** @var \Pyro\Webpack\WebpackData */
-    protected $data;
-
-    /** @var \Illuminate\Support\Collection */
-    protected $entriest;
-
-
+    //@formatter:off
     /** @var bool */
-    protected $active;
+//    protected $active;
     /** @var bool */
     protected $enabled;
     /** @var string */
@@ -27,80 +22,110 @@ class Webpack
     /** @var string */
     protected $port;
     /** @var string */
+    protected $namespace;
+    /** @var string */
     protected $outputPath;
+    //@formatter:on
 
+    /** @var array|\Pyro\Webpack\WebpackData = \Pyro\Webpack\WebpackDataExample::data() */
+    protected $data;
 
-    public function __construct(WebpackData $data)
+    /** @var \Pyro\Webpack\Package\Package[]|\Pyro\Webpack\Package\PackageCollection */
+    protected $packages;
+
+    /** @var \Pyro\Webpack\Package\EntryCollection|\Pyro\Webpack\Package\Entry[] */
+    protected $enabledEntries;
+
+    /** @var \Collective\Html\HtmlBuilder */
+    private $html;
+
+    public function __construct(WebpackData $data, HtmlBuilder $html)
     {
-        $this->data    = $data;
-        $this->entries = new Collection();
+        $this->data           = $data;
+        $this->enabledEntries = new EntryCollection();
+        $this->html           = $html;
     }
 
-    public function addWebpackEntry($name, $suffix = null)
+    public function isServer()
     {
-        $addon   = $this->findAddon($name);
-        $entries = $addon->getEntries();
-        $entry   = $suffix === null ? $entries->main() : $entries->suffix($suffix);
-        $this->entries->put($entry->getName(), $entry);
-        return $this;
+        return $this->data[ 'server' ];
     }
 
-    public function findAddon($name)
+    public function getMode()
     {
-        if ($entry = $this->data->getAddons()->findByName($name)) {
+        return $this->data[ 'mode' ];
+    }
+
+    public function isMode($name)
+    {
+        return $this->data[ 'mode' ] === $name;
+    }
+
+    public function getPublicPath(...$parts)
+    {
+        return path_join($this->data[ 'output.publicPath' ], ...$parts);
+    }
+
+    public function findPackage($name)
+    {
+        if ($entry = $this->getPackages()->findByName($name)) {
             return $entry;
         }
-        if ($entry = $this->data->getAddons()->findByComposerName($name)) {
+        if ($entry = $this->getPackages()->findByComposerName($name)) {
             return $entry;
         }
-        if ($entry = $this->data->getAddons()->findByStreamNamespace($name)) {
+        if ($entry = $this->getPackages()->findByStreamNamespace($name)) {
             return $entry;
         }
         throw new InvalidArgumentException("Could not find webpack addon with name '{$name}'");
     }
 
-    public function getData()
+    public function enableEntry($name, $suffix = null)
     {
-        return $this->data;
-    }
-
-    public function setData(WebpackData $data)
-    {
-        $this->data = $data;
+        $package = $this->findPackage($name);
+        $entries = $package->getEntries();
+        $entry   = $suffix === null ? $entries->main() : $entries->suffix($suffix);
+        $this->enabledEntries->add($entry);
         return $this;
     }
 
-    public function getEntries()
+    public function getEnabledEntries()
     {
-        return $this->entries;
+        return $this->enabledEntries;
     }
 
-    public function setEntries(Collection $entries)
+    public function renderScripts()
     {
-        $this->entries = $entries;
-        return $this;
+        $scripts = $this->enabledEntries->map->getScripts()->flatten()->map(function ($script) {
+            return $this->html->script($this->getPublicPath($script) );
+        })->cast('string')->implode(PHP_EOL);
+        return $scripts;
     }
 
-    public function getEntriest()
+    public function renderStyles()
     {
-        return $this->entriest;
+        $scripts = $this->enabledEntries->map->getStyles()->flatten()->map(function ($style) {
+            return $this->html->style($this->getPublicPath($style) );
+        })->cast('string')->implode(PHP_EOL);
+        return $scripts;
     }
 
-    public function setEntriest(\Illuminate\Support\Collection $entriest): Webpack
+    // generated
+
+    public function getPackages()
     {
-        $this->entriest = $entriest;
+        return $this->packages;
+    }
+
+    public function setPackages($packages)
+    {
+        $this->packages = $packages;
         return $this;
     }
 
     public function isActive()
     {
-        return $this->active;
-    }
-
-    public function setActive(bool $active): Webpack
-    {
-        $this->active = $active;
-        return $this;
+        return $this->enabled && $this->isServer();
     }
 
     public function isEnabled()
@@ -108,21 +133,9 @@ class Webpack
         return $this->enabled;
     }
 
-    public function setEnabled(bool $enabled): Webpack
-    {
-        $this->enabled = $enabled;
-        return $this;
-    }
-
     public function getPath()
     {
         return $this->path;
-    }
-
-    public function setPath(string $path): Webpack
-    {
-        $this->path = $path;
-        return $this;
     }
 
     public function getProtocol()
@@ -130,21 +143,9 @@ class Webpack
         return $this->protocol;
     }
 
-    public function setProtocol(string $protocol): Webpack
-    {
-        $this->protocol = $protocol;
-        return $this;
-    }
-
     public function getHost()
     {
         return $this->host;
-    }
-
-    public function setHost(string $host): Webpack
-    {
-        $this->host = $host;
-        return $this;
     }
 
     public function getPort()
@@ -152,22 +153,14 @@ class Webpack
         return $this->port;
     }
 
-    public function setPort(string $port): Webpack
+    public function getNamespace()
     {
-        $this->port = $port;
-        return $this;
+        return $this->namespace;
     }
 
     public function getOutputPath()
     {
         return $this->outputPath;
     }
-
-    public function setOutputPath(string $outputPath): Webpack
-    {
-        $this->outputPath = $outputPath;
-        return $this;
-    }
-
 
 }

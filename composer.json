@@ -3,7 +3,8 @@
     "description": "PyroCMS Webpack for admin frontend",
     "license": "MIT",
     "require": {
-        "laradic/support": "~2.0"
+        "laradic/support": "~2.0",
+        "ocramius/generated-hydrator": "~3.0"
     },
     "autoload": {
         "psr-4": {

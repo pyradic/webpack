@@ -2,35 +2,43 @@
 
 namespace Pyro\Webpack;
 
-use Anomaly\Streams\Platform\Addon\AddonCollection;
 use Anomaly\Streams\Platform\Addon\Event\AddonsHaveRegistered;
+use Anomaly\Streams\Platform\View\Event\TemplateDataIsLoading;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
-use Pyro\Webpack\Command\LoadWebpackData;
+use Pyro\Webpack\Command\ResolvePackageAddons;
 
 class WebpackServiceProvider extends ServiceProvider
 {
     use DispatchesJobs;
 
-    public function boot()
-    {
-
-        $this->publishes([
-            dirname(__DIR__) . '/config/webpack.php' => $this->app->configPath('webpack.php')
-        ]);
-    }
-
     public function register()
     {
         $this->mergeConfigFrom(dirname(__DIR__) . '/config/webpack.php', 'webpack');
         $this->registerWebpack();
-        $this->registerWebpackData();
-        $this->loadWebpackStreamAddons();
+        $this->loadWebpackHotMiddleware();
+    }
 
-        if ($this->app[ 'config' ][ 'webpack.enabled' ]) {
-            $this->loadWebpackHotMiddleware();
-        }
+    protected function registerWebpack()
+    {
+        $this->app->singleton('webpack', function (Application $app) {
+            $factory = WebpackFactory::make($app);
+            $webpack = $factory->build($app[ 'config' ][ 'webpack.path' ]);
+            return $webpack;
+        });
+        $this->app->alias('webpack', Webpack::class);
+
+        $this->app->events->listen(AddonsHaveRegistered::class, function (AddonsHaveRegistered $event) {
+            $event->getAddons();
+            $this->dispatchNow(new ResolvePackageAddons());
+        });
+
+        $this->app->events->listen(TemplateDataIsLoading::class, function (TemplateDataIsLoading $event) {
+            $event->getTemplate()->set('weback', $this->app->webpack);
+            $this->app->view->share('weback', $this->app->webpack);
+        });
     }
 
     protected function loadWebpackHotMiddleware()
@@ -41,38 +49,8 @@ class WebpackServiceProvider extends ServiceProvider
         $this->app[ 'config' ][ 'webpack.active' ] = true;
     }
 
-    protected function registerWebpack()
+    public function boot()
     {
-        $this->app->singleton('webpack', function ($app) {
-            return new Webpack($app['webpack.data']);
-        });
-        $this->app->alias('webpack', Webpack::class);
-    }
-
-    protected function registerWebpackData()
-    {
-        $this->app->singleton('webpack.data', function ($app) {
-            $webpackData = new WebpackData();
-            $data    = $this->dispatchNow(new LoadWebpackData($webpackData));
-            $webpackData->merge($data);
-            return $webpackData;
-        });
-        $this->app->alias('webpack.data', WebpackData::class);
-    }
-
-    protected function loadWebpackStreamAddons()
-    {
-
-        $this->app->events->listen(AddonsHaveRegistered::class, function (AddonsHaveRegistered $event) {
-            /** @var AddonCollection|\Anomaly\Streams\Platform\Addon\Addon[] $addons */
-            $addons  = $event->getAddons()->enabled();
-            $modules = $this->app->webpack->getAddons();
-            foreach ($addons as $addon) {
-                $composerName = $addon->getComposerJson()[ 'name' ];
-                if ($module = $modules->findByComposerName($composerName)) {
-                    $module->setStreamAddon($addon);
-                }
-            }
-        });
+        $this->publishes([ dirname(__DIR__) . '/config/webpack.php' => config_path('webpack.php') ]);
     }
 }

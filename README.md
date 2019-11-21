@@ -1,7 +1,13 @@
 # Pyro Webpack
 
+This package provides the tools and logic to build a frontend application for the PyroCMS admin control panel.
 
+This package does **not** provide a frontend application.
+This package does **not** change anything PyroCMS is doing
 
+It provides a way to properly create a modular admin control panel frontend application.
+
+What does that mean?
 
 - Works with yarn package manager. And it does so in a similar way as composer.
 - Utilizes the great things webpack provides

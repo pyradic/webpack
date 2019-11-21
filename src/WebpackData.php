@@ -2,63 +2,26 @@
 
 namespace Pyro\Webpack;
 
-use Anomaly\Streams\Platform\Support\Hydrator;
-use Illuminate\Filesystem\Filesystem;
-use Illuminate\Support\Collection;
-use InvalidArgumentException;
 use Laradic\Support\Dot;
 
 class WebpackData extends Dot
 {
-    public function getNamespace()
+    public function __construct($items = [])
     {
-        return $this[ 'output.library.0' ];
-    }
+        parent::__construct($items);
 
-    public function getPublicPath()
-    {
-        return $this[ 'output.publicPath' ];
-    }
-
-    /**
-     * @return \Pyro\Webpack\WebpackAddonCollection|\Pyro\Webpack\WebpackAddon[]
-     */
-    public function getAddons()
-    {
-        return $this[ 'addons' ];
-    }
-
-    public function setAddons($addons)
-    {
-        $addons = Collection::unwrap($addons);
-        $addons = WebpackAddonCollection::wrap($addons);
-        $this->set('addons', $addons);
-        return $this;
-    }
-
-    public function isServer()
-    {
-        return $this['server'] === true;
-    }
-
-    public function getMode()
-    {
-        return $this['mode'];
-    }
-
-    public function isMode($mode)
-    {
-        return $this['mode'] === $mode;
-    }
-
-    public function isDevelopment()
-    {
-        return $this->isMode('development');
-    }
-
-    public function isProduction()
-    {
-        return $this->isMode('production');
+        $this->map('addons', function ($addon) {
+            return Dot::wrap($addon)
+                ->map('entries', function ($entry) {
+                    return Dot::wrap($entry)
+                        ->set('scripts', collect($entry[ 'scripts' ]))
+                        ->set('styles', collect($entry[ 'styles' ]));
+                })
+                ->copy([
+                    'composer.name' => 'composerName',
+                    'composer.type' => 'composerType',
+                ]);
+        });
     }
 
 }

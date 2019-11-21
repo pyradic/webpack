@@ -19,7 +19,7 @@ class WebpackHotMiddleware
     /** @var \Illuminate\Contracts\Config\Repository */
     protected $config;
 
-    /** @var \Pyro\Webpack\Webpack */
+    /** @var \Pyro\Webpack\WebpackData */
     protected $webpack;
 
     /**
@@ -28,22 +28,10 @@ class WebpackHotMiddleware
      * @param Container       $container
      * @param LaravelDebugbar $debugbar
      */
-    public function __construct(Container $container, Repository $config, Webpack $webpack)
+    public function __construct(Container $container, Repository $config, WebpackData $webpack)
     {
         $this->container = $container;
         $this->config    = $config;
-
-//        $this->bundles   = config('webpack.bundles', []);
-//        $themes = collect(config('webpack.themes', []));
-        /** @var \Anomaly\Streams\Platform\Addon\Theme\Theme $theme */
-//        $theme = resolve(ThemeCollection::class)->active();
-//        if($theme instanceof Theme){
-//            $ns = $theme->getNamespace();
-//            if($themes->has($ns)) {
-//                $this->bundles = $themes->get($ns);
-//            }
-//
-//        }
         $this->webpack = $webpack;
     }
 
@@ -63,8 +51,8 @@ class WebpackHotMiddleware
         }
 
         $renderedContent = '';
-        foreach ($this->webpack->getPackages() as $package) {
-            foreach ($package->getEntries() as $entry) {
+        foreach ($this->webpack->getAddons() as $addon) {
+            foreach($addon->getEntries() as $entry) {
 
                 foreach ($entry->getStyles() as $style) {
                     $renderedContent .= "\n<link rel='stylesheet' type='text/css' href='{$style}'></link>";
@@ -99,9 +87,16 @@ class WebpackHotMiddleware
     public function handle($request, Closure $next)
     {
 
-        $enabled = $this->webpack->isEnabled() && $this->webpack->isActive();
+        $enabled = $this->config->get('webpack.enabled');
 
-        if ( ! $enabled) {
+        if (
+            $enabled !== true
+            || $this->webpack->isServer() !== true
+            || $this->webpack->getAddons()->isEmpty()
+        ) {
+            return $next($request);
+        }
+        if ($this->webpack->getAddons()->isEmpty()) {
             return $next($request);
         }
 
