@@ -1,6 +1,6 @@
 {
     "name": "pyro/webpack",
-    "description": "PyroCMS Webpack for admin frontend",
+    "description": "Provides the tools and logic to build a modern and modular frontend application for the PyroCMS admin control panel",
     "license": "MIT",
     "require": {
         "laradic/support": "~2.0",

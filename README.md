@@ -7,11 +7,23 @@ This package does **not** change anything PyroCMS is doing
 
 It provides a way to properly create a modular admin control panel frontend application.
 
-What does that mean?
-1. You create modular javascript code. Just like you do with your addon's PHP code.
-2. The backend (PHP/PyroCMS) manages on which pages/routes your code should be included **or** included and executed
+### Overview
+- You create modular javascript code. Just like you do with your addons PHP code.
+- Works with yarn package manager. And it does so in a similar way as composer.
+- Utilizes the (great) things webpack provides
+  - Tree shaking
+  - Dynamic imports (async loading)
+  - HOT reloading
+- The backend (PHP/PyroCMS) manages on which pages/routes your code should be included **or** included and executed
 
+
+### Introduction
 Lets pretend you have a module **pyro/foo**
+
+
+> ------
+**1:** We add some build information to our package.json saying that our code resides in the `lib` directory and what to use as `entrypoint`. Optionally specifying a name of a class that is exported by our lib.
+
 *addons/shared/**pyro/foo**/package.json*
 ```json
 {
@@ -24,6 +36,11 @@ Lets pretend you have a module **pyro/foo**
     }
 }
 ```
+
+
+> ------
+**2:** We create the `lib` dir and put a `index.js/ts` in it with the class.
+
 *addons/shared/**pyro/foo**/lib/index.ts*
 ```typescript
 class FooModuleServiceProvider {
@@ -32,6 +49,11 @@ class FooModuleServiceProvider {
 }
 export {FooModuleServiceProvider}
 ```
+
+
+> ------
+**3:** To actually include this in the view, we'd have to enable the entrypoint. This can be done from anywhere at any time.
+
 *addons/shared/**pyro/foo**/src/FooModuleServiceProvider*
 ```php
 class FooModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
@@ -41,17 +63,13 @@ class FooModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServ
 }
 ```
 
-
-
-- Works with yarn package manager. And it does so in a similar way as composer.
-- Utilizes the (great) things webpack provides
-  - Tree shaking
-  - Dynamic imports (async loading)
-  - HOT reloading
 - Shares some architecture concepts with the backend which provides consistency and clarity
   - The `Application`. A IoC container and handles booting the system
   - The `ServiceProvider`. For bootstrapping the services
   - 
+
+asdfsdf
+sdf
 
 - root
     - [package.json](#packagejson)
