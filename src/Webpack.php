@@ -97,7 +97,7 @@ class Webpack
     public function renderScripts()
     {
         $scripts = $this->enabledEntries->map->getScripts()->flatten()->map(function ($script) {
-            return $this->html->script($this->getPublicPath($script) );
+            return $this->html->script($this->getPublicPath($script));
         })->cast('string')->implode(PHP_EOL);
         return $scripts;
     }
@@ -105,10 +105,22 @@ class Webpack
     public function renderStyles()
     {
         $scripts = $this->enabledEntries->map->getStyles()->flatten()->map(function ($style) {
-            return $this->html->style($this->getPublicPath($style) );
+            return $this->html->style($this->getPublicPath($style));
         })->cast('string')->implode(PHP_EOL);
         return $scripts;
     }
+
+    public function getProviders()
+    {
+        $p         = $this->getEnabledEntries()->filter->hasProvider()->map->getProvider()->map(function ($provider, $exportName) {
+            $namespace = $this->getNamespace();
+            return "{$namespace}.{$exportName}.{$provider}";
+        })->values()->implode(', ');
+        $providers = "window['{$this->getNamespace()}'].providers = [{$p}];";
+        $providers = "<script> {$providers} </script>";
+        return $providers;
+    }
+
 
     // generated
 

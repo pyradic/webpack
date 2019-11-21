@@ -11,7 +11,8 @@ What does that mean?
 1. You create modular javascript code. Just like you do with your addon's PHP code.
 2. The backend (PHP/PyroCMS) manages on which pages/routes your code should be included **or** included and executed
 
-*addons/shared/pyro/foo/package.json*
+Lets pretend you have a module **pyro/foo**
+*addons/shared/**pyro/foo**/package.json*
 ```json
 {
     "name": "@pyro/foo",
@@ -23,7 +24,7 @@ What does that mean?
     }
 }
 ```
-*addons/shared/pyro/foo/lib/index.ts*
+*addons/shared/**pyro/foo**/lib/index.ts*
 ```typescript
 class FooModuleServiceProvider {
     register(){}
@@ -31,7 +32,7 @@ class FooModuleServiceProvider {
 }
 export {FooModuleServiceProvider}
 ```
-*addons/shared/pyro/foo/src/FooModuleServiceProvider*
+*addons/shared/**pyro/foo**/src/FooModuleServiceProvider*
 ```php
 class FooModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
     public function register(){

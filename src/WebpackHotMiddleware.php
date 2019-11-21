@@ -67,9 +67,11 @@ class WebpackHotMiddleware
             foreach ($package->getEntries() as $entry) {
 
                 foreach ($entry->getStyles() as $style) {
+                    $style = $this->webpack->getPublicPath($style);
                     $renderedContent .= "\n<link rel='stylesheet' type='text/css' href='{$style}'></link>";
                 }
                 foreach ($entry->getScripts() as $script) {
+                    $script = $this->webpack->getPublicPath($script);
                     $renderedContent .= "\n<script src='{$script}'></script>";
                 }
             }

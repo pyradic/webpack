@@ -36,8 +36,8 @@ class WebpackServiceProvider extends ServiceProvider
         });
 
         $this->app->events->listen(TemplateDataIsLoading::class, function (TemplateDataIsLoading $event) {
-            $event->getTemplate()->set('weback', $this->app->webpack);
-            $this->app->view->share('weback', $this->app->webpack);
+            $event->getTemplate()->set('webpack', $this->app->webpack);
+            $this->app->view->share('webpack', $this->app->webpack);
         });
     }
 
