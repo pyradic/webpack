@@ -8,9 +8,42 @@ This package does **not** change anything PyroCMS is doing
 It provides a way to properly create a modular admin control panel frontend application.
 
 What does that mean?
+1. You create modular javascript code. Just like you do with your addon's PHP code.
+2. The backend (PHP/PyroCMS) manages on which pages/routes your code should be included **or** included and executed
+
+*addons/shared/pyro/foo/package.json*
+```json
+{
+    "name": "@pyro/foo",
+    "pyro": {
+        "srcPath": "lib",
+        "entrypoints": [
+            {"path": "index.ts", "provider": "FooModuleServiceProvider"}
+        ]
+    }
+}
+```
+*addons/shared/pyro/foo/lib/index.ts*
+```typescript
+class FooModuleServiceProvider {
+    register(){}
+    boot(){}
+}
+export {FooModuleServiceProvider}
+```
+*addons/shared/pyro/foo/src/FooModuleServiceProvider*
+```php
+class FooModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
+    public function register(){
+        $this->app->webpack->enableEntry('@pyro/foo');
+    }
+}
+```
+
+
 
 - Works with yarn package manager. And it does so in a similar way as composer.
-- Utilizes the great things webpack provides
+- Utilizes the (great) things webpack provides
   - Tree shaking
   - Dynamic imports (async loading)
   - HOT reloading
