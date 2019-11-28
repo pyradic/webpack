@@ -3,6 +3,8 @@
 namespace Pyro\Webpack\Package;
 
 
+use Illuminate\Support\Collection;
+
 class EntryCollection extends \Illuminate\Support\Collection
 {
     /** @var Entry[] */
@@ -50,5 +52,15 @@ class EntryCollection extends \Illuminate\Support\Collection
     public function sorted()
     {
         return $this->sortBy->getSorted();
+    }
+
+    public function toPackages()
+    {
+        return new PackageCollection($this->map->getPackage()->all());
+    }
+
+    public function toBase()
+    {
+        return new Collection($this->items);
     }
 }

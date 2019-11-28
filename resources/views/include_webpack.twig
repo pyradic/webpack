@@ -14,15 +14,19 @@
         @todo Change so this does not use a middleware anymore. Preferably combining it with the render funcs
     #}
 
+    <!-- WEBPACK ASSETS -->
     {% if webpack.isActive() %}
-        <!--WEBPACK_HERE_PLEASE-->
+        {{ webpack.renderDevServerAssets|raw }}
     {% else %}
         {{ webpack.renderScripts|raw }}
         {{ webpack.renderStyles|raw }}
     {% endif %}
 
-    {# Render the service provider array to javascript. (pyro.providers) #}
-    <!-- PROVIDERS -->
-    {{ webpack.providers | raw }}
+    {# Render the service provider array to javascript. #}
+    <!-- WEBPACK PROVIDERS -->
+    {{ webpack.renderProviders | raw }}
+
+    <!-- WEBPACK ALIASES -->
+    {{ webpack.renderAliases | raw }}
 
 {% endif %}

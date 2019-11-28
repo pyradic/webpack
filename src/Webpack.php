@@ -4,6 +4,7 @@ namespace Pyro\Webpack;
 
 use Collective\Html\HtmlBuilder;
 use InvalidArgumentException;
+use Pyro\Webpack\Package\Entry;
 use Pyro\Webpack\Package\EntryCollection;
 
 class Webpack
@@ -94,6 +95,25 @@ class Webpack
         return $this->enabledEntries;
     }
 
+    public function renderDevServerAssets()
+    {
+        $lines = [];
+        foreach ($this->getPackages() as $package) {
+            foreach ($package->getEntries() as $entry) {
+
+                foreach ($entry->getStyles() as $style) {
+                    $style   = $this->getPublicPath($style);
+                    $lines[] = "<link rel='stylesheet' type='text/css' href='{$style}'></link>";
+                }
+                foreach ($entry->getScripts() as $script) {
+                    $script  = $this->getPublicPath($script);
+                    $lines[] = "<script src='{$script}'></script>";
+                }
+            }
+        }
+        return implode("\n", $lines);
+    }
+
     public function renderScripts()
     {
         $scripts = $this->enabledEntries->sorted()->map->getScripts()->flatten()->map(function ($script) {
@@ -110,7 +130,7 @@ class Webpack
         return $scripts;
     }
 
-    public function getProviders()
+    public function renderProviders()
     {
         $p         = $this->getEnabledEntries()->filter->hasProvider()->map->getProvider()->map(function ($provider, $exportName) {
             $namespace = $this->getNamespace();
@@ -121,6 +141,20 @@ class Webpack
         return $providers;
     }
 
+    public function renderAliases()
+    {
+        $entries = $this->enabledEntries->sorted()->map(function (Entry $entry) {
+            $packageName = $entry->getPackage()->getName();
+            $name        = $entry->getName();
+            if ($entry->isSuffixed()) {
+                $name        .= $entry->getSuffix();
+                $packageName .= $entry->getSuffix();
+            }
+            return "window['{$this->getNamespace()}']['{$packageName}'] = window['{$this->getNamespace()}'].{$name};";
+        });
+        $helpers = $entries->implode("\n");
+        return $helpers;
+    }
 
     // generated
 
