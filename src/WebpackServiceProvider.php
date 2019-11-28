@@ -8,6 +8,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\Factory;
 use Pyro\Webpack\Command\ResolvePackageAddons;
 
 class WebpackServiceProvider extends ServiceProvider
@@ -16,7 +17,7 @@ class WebpackServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->mergeConfigFrom(dirname(__DIR__) . '/config/webpack.php', 'webpack');
+        $this->mergeConfigFrom(dirname(__DIR__) . '/resources/config/webpack.php', 'webpack');
         $this->registerWebpack();
         $this->loadWebpackHotMiddleware();
     }
@@ -49,8 +50,22 @@ class WebpackServiceProvider extends ServiceProvider
         $this->app[ 'config' ][ 'webpack.active' ] = true;
     }
 
-    public function boot()
+    public function boot(Factory $views, \Anomaly\Streams\Platform\Application\Application $application)
     {
-        $this->publishes([ dirname(__DIR__) . '/config/webpack.php' => config_path('webpack.php') ]);
+        $this->publishes([
+            dirname(__DIR__) . '/resources/config/webpack.php' => config_path('webpack.php'),
+            dirname(__DIR__) . '/resources/views'              => resource_path('views/vendor/webpack'),
+        ]);
+
+        $views->addNamespace(
+            'webpack',
+            [
+                $application->getResourcesPath(
+                    "webpack/views/"
+                ),
+                resource_path('views/vendor/webpack'),
+                __DIR__ . '/../resources/views',
+            ]
+        );
     }
 }

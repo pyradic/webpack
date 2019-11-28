@@ -30,6 +30,7 @@ export namespace JsonPlugin {
         data?: any
         transformer?: (jsonData: any, data: typeof _do & Record<string, any>) => any
         done?: (jsonData: any, data: typeof _do & Record<string, any>, stats:Stats) => any
+        remove?:boolean
     }
 }
 
@@ -46,8 +47,9 @@ export class JsonPlugin {
         if ( this.options.filePath !== undefined ) {
             this.webpackJson.filePath = this.options.filePath
         }
-        this.webpackJson.ensureRemoved();
-
+        if(this.options.remove) {
+            this.webpackJson.ensureRemoved();
+        }
         let jsonData: any = { ...this.options.data }
         let data       = createDataObject();
 
@@ -76,8 +78,9 @@ export class JsonPlugin {
 
         })
         compiler.hooks.done.tap(NAME, async (stats) => {
-            this.webpackJson.ensureRemoved();
-
+            if(this.options.remove) {
+                this.webpackJson.ensureRemoved();
+            }
             jsonData = { ...this.options.data }
             if ( typeof this.options.transformer === 'function' ) {
                 jsonData = this.options.transformer(jsonData, data)

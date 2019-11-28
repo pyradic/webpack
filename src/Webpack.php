@@ -96,7 +96,7 @@ class Webpack
 
     public function renderScripts()
     {
-        $scripts = $this->enabledEntries->map->getScripts()->flatten()->map(function ($script) {
+        $scripts = $this->enabledEntries->sorted()->map->getScripts()->flatten()->map(function ($script) {
             return $this->html->script($this->getPublicPath($script));
         })->cast('string')->implode(PHP_EOL);
         return $scripts;
@@ -104,7 +104,7 @@ class Webpack
 
     public function renderStyles()
     {
-        $scripts = $this->enabledEntries->map->getStyles()->flatten()->map(function ($style) {
+        $scripts = $this->enabledEntries->sorted()->map->getStyles()->flatten()->map(function ($style) {
             return $this->html->style($this->getPublicPath($style));
         })->cast('string')->implode(PHP_EOL);
         return $scripts;

@@ -47,4 +47,8 @@ class EntryCollection extends \Illuminate\Support\Collection
         }
     }
 
+    public function sorted()
+    {
+        return $this->sortBy->getSorted();
+    }
 }

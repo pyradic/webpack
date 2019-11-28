@@ -111,4 +111,11 @@ class Entry
         return $this->styles;
     }
 
+    public function getSorted()
+    {
+        return $this->package->getSorted();
+    }
+
+
+
 }

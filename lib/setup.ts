@@ -145,7 +145,12 @@ export function setupBase(options: SetupBaseOptions) {
         wp.mode('production');
         wp.optimization.minimize(true)
 
-        helpers.minimizer(wp, {})
+        helpers.minimizer(wp, {
+            terserOptions: {
+                // keep_fnames:true
+            },
+            exclude: [/ServiceProvider/]
+        })
         helpers.replaceStyleLoader(wp, 'css')
         helpers.replaceStyleLoader(wp, 'scss')
         plugins.loaderOptions(wp, {
