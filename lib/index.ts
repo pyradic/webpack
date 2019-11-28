@@ -1,5 +1,6 @@
 import { PyroBuilder } from './PyroBuilder';
 
+export * from './env'
 export * from './PyroBuilder'
 export * from './Addon'
 export * from './AddonFinder'

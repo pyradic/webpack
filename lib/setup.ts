@@ -147,9 +147,9 @@ export function setupBase(options: SetupBaseOptions) {
 
         helpers.minimizer(wp, {
             terserOptions: {
-                // keep_fnames:true
-            },
-            exclude: [/ServiceProvider/]
+                keep_classnames: /.*ServiceProvider.*/,
+                keep_fnames: /.*ServiceProvider.*/
+            }
         })
         helpers.replaceStyleLoader(wp, 'css')
         helpers.replaceStyleLoader(wp, 'scss')

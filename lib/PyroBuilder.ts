@@ -1,10 +1,10 @@
 import { AddonArray } from './AddonArray';
 import { AddonFinder } from './AddonFinder';
 import { Webpacker } from '@radic/webpacker';
-import { setupBase, setupWebpacker } from './setup';
-import { config } from 'dotenv';
+import { setupWebpacker } from './setup';
 import { Addon } from './Addon';
 import { SyncHook, SyncWaterfallHook } from 'tapable';
+import {env} from './env'
 
 export interface PyroBuilderOptions {
     /**
@@ -62,7 +62,7 @@ export class PyroBuilder implements PyroBuilderOptions {
         this.globs     = options.globs
         this.finder    = options.finder || new AddonFinder()
         this.rootPath  = options.rootPath || process.cwd();
-        this.namespace = options.namespace || 'pyro'
+        this.namespace = options.namespace || env.WEBPACK_NAMESPACE
         this.serve     = options.serve === true || false
         this.mode      = 'production'
         if ( 'mode' in options ) {
@@ -73,7 +73,6 @@ export class PyroBuilder implements PyroBuilderOptions {
     }
 
     public init() {
-        this.env    = this.initEnv();
         this.addons = this.initAddons();
         this.wp     = this.initWebpacker();
         this.hooks.initialized.call(this);
@@ -100,15 +99,6 @@ export class PyroBuilder implements PyroBuilderOptions {
         return addons;
     }
 
-    protected initEnv(): any {
-        const { parsed: env, error } = config({
-            // debug   : false,
-            encoding: 'utf8'
-        })
-        this.hooks.env.call(env);
-
-        return env;
-    }
 
     public toConfig() {
         if ( this.webpackers.length === 0 ) {
@@ -122,7 +112,7 @@ export class PyroBuilder implements PyroBuilderOptions {
 
     webpackers = [];
 
-    public addWebpacker(options:Webpacker.Options) {
+    public addWebpacker(options: Webpacker.Options) {
         const wp = new Webpacker({
             mode: this.mode,
             ...options

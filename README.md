@@ -1,289 +1,182 @@
 # Pyro Webpack
 
-This package provides the tools and logic to build a frontend application for the PyroCMS admin control panel.
+This package provides the tools and logic to build a modular frontend application for the PyroCMS admin control panel.
 
 This package does **not** provide a frontend application.
 This package does **not** change anything PyroCMS is doing
 
-It provides a way to properly create a modular admin control panel frontend application.
 
-### Overview
-- You create modular javascript code. Just like you do with your addons PHP code.
-- Works with yarn package manager. And it does so in a similar way as composer.
+
+### Features
+- Create modular javascript for addons (which are already modular).
+- Addons can enable javascript module(s) at any given point.
+- Uses `yarn workspaces` (provides `yarn` with somewhat similar functionality as the `composer-merge-plugin` does with `composer`)
 - Utilizes the (great) things webpack provides
   - Tree shaking
   - Dynamic imports (async loading)
   - HOT reloading
-- The backend (PHP/PyroCMS) manages on which pages/routes your code should be included **or** included and executed
 
 
-### Introduction
-Lets pretend you have a module **pyro/foo**
+### Basic Example
 
+**1:** Lets pretend to have a module *addons/shared/**pyro/core-module*** that contains
 
-> ------
-**1:** We add some build information to our package.json saying that our code resides in the `lib` directory and what to use as `entrypoint`. Optionally specifying a name of a class that is exported by our lib.
+*lib/index.js*
+```typescript
+export class Application {
+    static getInstance(){return new Application()}
+    register(provider){}
+    boot(){}
+    bind(){}
+    make(){}
+}
+export class ServiceProvider {
+    app = Application.getInstance()
+}
+export class CoreModuleServiceProvider extends ServiceProvider{
+    register(){}
+}
+```
+*lib/__variables.scss*
+```scss
+@use "~bootstrap/scss/variables" with (
+    $text-color: blue;
+)
+$core-variable-one: #333 !default;
+$core-variable-two: darken($core-variable-one, 5) !default;
+```
 
-*addons/shared/**pyro/foo**/package.json*
-```json
-{
-    "name": "@pyro/foo",
-    "pyro": {
-        "srcPath": "lib",
-        "entrypoints": [
-            {"path": "index.ts", "provider": "FooModuleServiceProvider"}
-        ]
+*src/CoreModuleServiceProvider.php*
+```php
+class CoreModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
+    public function boot(Webpack $webpack){
+        $webpack->enableEntry('@pyro/core-module');
     }
 }
 ```
 
 
-> ------
-**2:** We create the `lib` dir and put a `index.js/ts` in it with the class.
+**2:** Lets pretend to have another module *addons/shared/**pyro/foo-module*** that contains
 
-*addons/shared/**pyro/foo**/lib/index.ts*
+*lib/index.js*
 ```typescript
-class FooModuleServiceProvider {
-    register(){}
-    boot(){}
+import './style.scss';
+import {ServiceProvider} from '@pyro/core-module'
+export function logWithPrefix(string){
+    console.log('prefix', string)
 }
-export {FooModuleServiceProvider}
+export class FooService {
+    hello(){
+        logWithPrefix('FooService hello')
+    }
+}
+export class FooModuleServiceProvider extends ServiceProvider{
+    register(){
+        logWithPrefix('registered FooModuleServiceProvider')
+        this.app.bind('foo.service', FooService);
+    }
+}
 ```
 
+*lib/style.scss*
+```scss
+@import "@pyro/core-module/lib/variables";
+.foo-module {
+    &__item {
+        color: $core-variable-one;
+        &--disabled {
+            color: $core-variable-two;
+        }
+    }
+}
+```
 
-> ------
-**3:** To actually include this in the view, we'd have to enable the entrypoint. This can be done from anywhere at any time.
-
-*addons/shared/**pyro/foo**/src/FooModuleServiceProvider*
+*src/FooModuleServiceProvider.php*
 ```php
 class FooModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
-    public function register(){
-        $this->app->webpack->enableEntry('@pyro/foo');
+    public function boot(Webpack $webpack){
+        $webpack->enableEntry('@pyro/foo-module'); // can obviously be called anywhere, like controllers actions, route-groups etc
     }
 }
 ```
 
-- Shares some architecture concepts with the backend which provides consistency and clarity
-  - The `Application`. A IoC container and handles booting the system
-  - The `ServiceProvider`. For bootstrapping the services
-  - 
+**3:** Lets pretend to have another *module addons/shared/**pyro/bar-module*** that contains
 
-asdfsdf
-sdf
+*lib/index.js*
+```typescript
+import {ServiceProvider} from '@pyro/core-module'
+import {FooService} from '@pyro/foo-module'; // can import from other modules
 
-- root
-    - [package.json](#packagejson)
-    - composer.json
-    - [webpack.config.js](#webpackconfigjs)
-    - addons
-    - core
-        - anomaly
-            - [navigation-module](#navigation-module)
-                - lib
-                    - [NavigationModuleServiceProvider.js](#navigation-modulelibnavigationmoduleserviceproviderjs)
-                    - [index.scss](#navigation-modulelibindexscss)
-                    - [index.js](#navigation-modulelibindexjs)
-                - resources
-                    - js
-                      - admin.js
-                    - css
-                      - admin.css
-                    - src
-                      - NavigationModuleServiceProvider.php
-                    - [package.json](#navigation-modulepackagejson) = @anomaly/navigation-module
-        - pyrocms
-            - accelerant-theme
-                - lib
-                    - scss
-                        - _variables.scss
-                    - index.js
-                - resources
-                    - js
-                    - css
-                - src
-                - package.json = @pyrocms/accelerant-theme
-    - vendor
-        - anomaly/streams-platform
-            - lib
-                - Application.js
-                - ServiceProvider.js
-                - index.js
-            - resources
-                - js
-                - css
-            - src
-            - package.json = @anomaly/streams-platform
-
-#### root
-###### package.json
-```json
-{
-    "private": true,
-    "workspaces": {
-        "packages": [
-            "addons/shared/*/*",
-            "core/*/*"
-        ]
-    },
-    "dependencies": {
-        "webpack": "*"
-    }
-}  
-```
-
-###### webpack.config.js
-```js
-// a lot of code
-```
-
-####  `navigation-module`
-
-###### navigation-module/package.json
-```json
-{
-    "name": "@anomaly/navigation-module",
-    "main": "lib/index.js",
-    "dependencies": {
-        "@anomaly/stream-platform": "^1.0.0"
-    }
-}
-```
-
-###### navigation-module/lib/NavigationModuleServiceProvider.js
-```js
-import {ServiceProvider} from '@anomaly/streams-platform'    
-import {Menu} from './Menu'
-    
-export class NavigationModuleServiceProvider extends ServiceProvider {
+export class BarModuleServiceProvider extends ServiceProvider{
     register(){
-        this.singleton('anomaly.module.navigation::menu', Menu)
+        logWithPrefix('registered BarModuleServiceProvider')
     }
-    
     boot(){
-        
+        const fooService:FooService = this.app.make('foo.service');
+        fooService.hello();
+    }
+    async loadStyle(){
+        return import('./style.scss')
     }
 }
 ```
 
-###### navigation-module/lib/index.scss
+*lib/style.scss*
 ```scss
-@import "@pyrocms/accelerant-theme/lib/scss/_variables.scss";
-
-$navigation-text-color: $color-grey;
+$core-variable-one: #999;
+@import "@pyro/core-module/lib/variables";
+.bar-module {
+    &__item {
+        color: $core-variable-one;
+        &--disabled {
+            color: $core-variable-two;
+        }
+    }
+}
 ```
 
-###### navigation-module/lib/index.js
-```js
-import './index.scss'
-import {NavigationModuleServiceProvider} from './NavigationModuleServiceProvider'
-export {NavigationModuleServiceProvider}
-```
-
-
-###### navigation-module/src/NavigationModuleServiceProvider.php
+*src/BarModuleServiceProvider.php*
 ```php
-class NavigationModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
-    protected $jsProviders = [
-        'PYROCMS_EXPORTS.anomaly.navigation_module.NavigationModuleServiceProvider'
-    ];
-    
-    public function boot(\Anomaly\Streams\Platform\Asset\Asset $assets, \Anomaly\Streams\Platform\View\ViewTemplate $template){
-        $assets->add('admin.js', 'anomaly.module.navigation::js/admin.js');
-        $assets->add('admin.css', 'anomaly.module.navigation::js/admin.css');
-        $template->set('js_providers', array_merge($template->get('js_providers',[]), $this->jsProviders));
+class BarModuleServiceProvider extends \Anomaly\Streams\Platform\Addon\AddonServiceProvider {
+    public function boot(Webpack $webpack){
+        $webpack->enableEntry('@pyro/bar-module');
     }
 }
 ```
 
-#### `stream-platform`
-###### streams-platform/package.json
-```json
-{
-    "name": "@anomaly/stream-platform",
-    "main": "lib/index.js",
-    "dependencies": {
-        "inversify": "^5.0.0"
-    }
-}
-```
-###### streams-platform/lib/Application.js
-```js
-import {Container} from 'inversify'
-
-export class Application extends Container {
-    providers = [];
-    loadedProviders = {}
-    bootstrapped=false
-    booted=false
-    async bootstrap(ProviderClasses){
-        this.providers=ProviderClasses;
-        for(const ProviderClass of ProviderClasses){
-            await this.register(ProviderClass)
-        }
-        this.bootstrapped=true
-        return this;
-    }
-    async register(ProviderClass){
-        if(ProviderClass.__registered){
-            return;
-        }
-        ProviderClass.__registered = true;
-        const provider = new ProviderClass(this);
-        if('register' in provider){
-            await provider.register()
-        }
-        this.loadedProviders[ProviderClass] = provider;
-        if(this.booted){
-            this.bootProvider(ProviderClass)
-        }
-        return this;
-    }
-    async bootProvider(ProviderClass){
-        if(ProviderClass.__booted){
-            return
-        }
-        ProviderClass.__booted = true;
-        const provider = this.loadedProviders[ProviderClass];
-        if('boot' in provider){
-            await provider.boot();
-        }
-    }
-    async boot(){
-        for(const ProviderClass in this.loadedProviders){
-            await this.bootProvider(ProviderClass)
-        }
-        return this;
-    }
-    
-    async start(){
-        // an example for vue
-        const root = new Vue({
-            //...
-        })
-        root.$mount('#root')
-        return this;        
-    }
-}  
-```
-
-###### streams-platform/lib/ServiceProvider.js
-```js
-export class ServiceProvider {}  
-```
-
-#### `accelerant-theme`
-###### accelerant-theme/resources/views/partials/assets.twig
+**4:** Create a view to integrate this stuff
+I'd recommend creating a view and passing that view to the `ViewIncludes::include('cp_scripts', 'the.created.view')`
 ```html
-{% asset_script('admin.js') %}
-{% asset_style('admin.css') %}
+{% import "webpack::include_webpack" %}
+
 <script>
-    app
-        .bootstrap([
-            {% for provider in template.js_providers %}
-            '{{ provider }}',
-            {% endfor %}
-        ])
-        .then(app.boot())
-        .then(app.start())    
+    // The namespace is set in webpack.php config (or .env WEBPACK_NAMESPACE)
+    var exported = window['$NAMESPACE$'];
+    exported.providers; // array of ServiceProvider classes of enabled entries. 
+    
+    var app = exported.pyro__core_module.Application.getInstance()
+    
+    exported.providers.forEach(function(ProviderClass){
+        app.register(ProviderClass);        
+    })
+    
+    app.boot().then(function(){
+        var fooService = app.make('foo.service');
+        fooService.hello()
+        // app.$mount() ???
+        // app.render() ???
+        // implement it yourself
+    })
+    
 </script>
+
 ```
+
+
+**5:** Run `yarn serve`, `yarn build:dev` or `yarn build:prod`
+
+**`yarn serve`** Will start a webpack-dev-server. `Pyro\Webpack` is aware of this will render the webpack-dev-server asset paths.  
+This will enable HOT Reloading on the scss files we defined. (Vue or React can easily be added with HMR aswell, and is explained further onwards)
+
+**`yarn build:prod`** Will create production assets and place them by default in the `public/assets` (configurable). Again `Pyro\Webpack` is aware of this and will render the production asset paths.
+

@@ -20,8 +20,9 @@
         {{ webpack.renderScripts|raw }}
         {{ webpack.renderStyles|raw }}
     {% endif %}
-{% endif %}
 
-{# Render the service provider array to javascript. (pyro.providers) #}
-<!-- PROVIDERS -->
-{{ webpack.providers | raw }}
+    {# Render the service provider array to javascript. (pyro.providers) #}
+    <!-- PROVIDERS -->
+    {{ webpack.providers | raw }}
+
+{% endif %}
