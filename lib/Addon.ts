@@ -90,6 +90,8 @@ export class Addon {
 
     get entrypoints() {return new EntrypointArray(...this.pkg.pyro.entrypoints.map(e => ({ ...e, path: join(this.srcPath, e.path) }))) }
 
+    getSrcPath(...parts: string[]) {return join(this.srcPath, ...parts); }
+
     getPath(...parts: string[]) {return join(this.path, ...parts); }
 
     getRPath(...parts: string[]) { return join(this.relativePath, ...parts) }

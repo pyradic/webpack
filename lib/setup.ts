@@ -52,7 +52,7 @@ export function setupBase(options: SetupBaseOptions) {
         .library([ namespace, '[addon:exportName]' ] as any)
         .libraryTarget('window')
         .filename('js/[name].js')
-        .chunkFilename('js/[name].chunk.[id].js')
+        .chunkFilename('js/[name]_[addon:exportName].chunk.[id].js')
         .path(join(rootPath, 'public/assets'))
         .publicPath('/assets')
     ;
@@ -84,7 +84,7 @@ export function setupBase(options: SetupBaseOptions) {
     rules.babel(wp, {}, 'typescript');
     // wp.module.rule('typescript').use('save-content-loader').loader(resolve(rootPath, 'save-content-loader')).options({    name: 'typescript',});
     rules.typescript(wp, {
-        appendTsSuffixTo: [ /.vue$/ ],
+        appendTsxSuffixTo: [ /.vue$/ ],
         configFile      : 'tsconfig.json',
         transpileOnly   : true,
         // experimentalWatchApi: true,

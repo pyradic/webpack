@@ -153,7 +153,8 @@ class Webpack
             return "window['{$this->getNamespace()}']['{$packageName}'] = window['{$this->getNamespace()}'].{$name};";
         });
         $helpers = $entries->implode("\n");
-        return $helpers;
+
+        return $this->html->tag('script', $helpers);
     }
 
     // generated

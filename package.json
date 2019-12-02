@@ -16,21 +16,21 @@
         "composer-schema": "wget https://raw.githubusercontent.com/composer/composer/master/res/composer-schema.json && json2ts composer-schema.json composer.d.ts && rm composer-schema.json"
     },
     "dependencies": {
-        "tapable": "^1.1.3",
-        "json-schema-to-typescript": "^7.1.0",
-        "mysqldump": "^3.1.0",
-        "sql-ddl-to-json-schema": "^3.1.2",
-        "dotenv": "^8.2.0",
         "@types/dotenv": "^8.2.0",
         "@types/webpack-chain": "^5.2.0",
-        "lodash": "^4.17.15"
+        "dotenv": "^8.2.0",
+        "json-schema-to-typescript": "^7.1.0",
+        "lodash": "^4.17.15",
+        "mysqldump": "^3.1.0",
+        "quicktype": "^15.0.207",
+        "sql-ddl-to-json-schema": "^3.1.2",
+        "tapable": "^1.1.3"
     },
-    "devDependencies": {
-    },
+    "devDependencies": {},
     "peerDependencies": {
+        "@radic/webpacker": "^7.0.0",
         "webpack": "^4.40.2",
         "webpack-cli": "^3.3.8",
-        "webpack-dev-server": "^3.8.0",
-        "@radic/webpacker": "^7.0.0"
+        "webpack-dev-server": "^3.8.0"
     }
 }

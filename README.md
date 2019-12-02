@@ -106,7 +106,7 @@ This package does **not** change anything PyroCMS is doing
         ```typescript
         import {ServiceProvider} from '@pyro/core-module'
         import {FooService} from '@pyro/foo-module'; // can import from other modules
-        
+
         export class BarModuleServiceProvider extends ServiceProvider{
             register(){
                 logWithPrefix('registered BarModuleServiceProvider')
@@ -151,20 +151,20 @@ This package does **not** change anything PyroCMS is doing
 
     ```html
     {% import "webpack::include_webpack" %}
-    
+
     <script>
         // The namespace is set in webpack.php config (or .env WEBPACK_NAMESPACE)
         var exported = window['$NAMESPACE$'];
-        exported.providers; // array of ServiceProvider classes of enabled entries. 
-        
+        exported.providers; // array of ServiceProvider classes of enabled entries.
+
         var app = exported.pyro__core_module.Application.getInstance()
         // or
         var app = exported['@pyro/core-module'].Application.getInstance()
-        
+
         exported.providers.forEach(function(ProviderClass){
-            app.register(ProviderClass);        
+            app.register(ProviderClass);
         })
-        
+
         app.boot().then(function(){
             var fooService = app.make('foo.service');
             fooService.hello()
@@ -172,16 +172,16 @@ This package does **not** change anything PyroCMS is doing
             // app.render() ???
             // implement it yourself
         })
-        
+
     </script>
-    
+
     ```
 
 
 
 5Run `yarn serve`, `yarn build:dev` or `yarn build:prod`
 
-    **`yarn serve`** Will start a webpack-dev-server. `Pyro\Webpack` is aware of this will render the webpack-dev-server asset paths.  
+    **`yarn serve`** Will start a webpack-dev-server. `Pyro\Webpack` is aware of this will render the webpack-dev-server asset paths.
     This will enable HOT Reloading on the scss files we defined. (Vue or React can easily be added with HMR aswell, and is explained further onwards)
 
     **`yarn build:prod`** Will create production assets and place them by default in the `public/assets` (configurable). Again `Pyro\Webpack` is aware of this and will render the production asset paths.
@@ -193,7 +193,7 @@ This package does **not** change anything PyroCMS is doing
 
 1. composer.json
     ```json
-     "pyro/webpack": "^1.0" 
+     "pyro/webpack": "^1.0"
     ```
 
 2. app.php
@@ -241,7 +241,7 @@ This package does **not** change anything PyroCMS is doing
 5. webpack.config.js
     ```typescript
     import { PyroBuilder } from '@pyro/webpack';
-    
+
     const builder = new PyroBuilder({
         globs    : [
             'addons/shared/*/*',
@@ -251,11 +251,11 @@ This package does **not** change anything PyroCMS is doing
         rootPath : __dirname
     })
     const { wp, env, addons } = builder.init();
-    
+
     // any custom logic
-    
+
     const config = wp.toConfig();
-    
+
     export default config;
     ```
 
@@ -263,3 +263,100 @@ This package does **not** change anything PyroCMS is doing
 
 7. Create a view like shown at [Basic Example > **4:** Create a view to..](#)
 
+
+
+#### Add a addon to the builder
+In order to get a addon included in the builder, a few additional steps are required.
+
+1. Ensure the addon has a `package.json` (next to the composer.json file)
+2. It's recommended to set the `name` field in package.json the same as in composer.json, but prefixed with an `@`.
+3. Ensure package.json has a the `version` field, preferably `1.0.0`. This version should not be changed.
+4. Add the `pyro` configuration. Check the example below
+
+Example of a valid package.json:
+```json
+{
+    "name": "@pyro/foo-module",
+    "version": "1.0.0",
+    "scripts": {},
+    "main": "lib/index.js",
+    "typings": "lib/index.js",
+    "types": "lib/index.js",
+    "pyro": {
+        "srcPath": "lib",
+        "entrypoints": [
+            {"path": "index.js", "provider": "FooModuleServiceProvider"}
+        ]
+    },
+    "dependencies": {
+        "@pyro/core-module": "^1.0.0",
+        "bootstrap": "^4.3.1",
+        "element-ui": "^2.12.0",
+        "font-awesome": "^4.7.0",
+        "vue-clickaway": "^2.2.2"
+    },
+    "devDependencies": {}
+}
+
+```
+
+
+### PHP `Pyro\Webpack`
+
+##### `Pyro\Webpack\Webpack`
+###### `enableEntry($name, $suffix = null)`
+
+
+### JS `@pyro/webpack`
+- [`webpack-chain`](https://github.com/neutrinojs/webpack-chain/) Provides the chaining webpack configurator API  to generate and simplify the modification of webpack
+- [`@radic/webpacker`](#) Extends the chaining API with various useful features. Additionally it also provides a whole range of *pre-configured, but reconfigurable presets*. This aims to make your webpack config small and to the point.
+- [`@pyro/webpack`](#) Provides `PyroBuilder` to setup webpack. It locates all PyroCMS javascript addon modules and adds them correctly to the webpack configuration.
+
+```typescript
+import { PyroBuilder } from '@pyro/webpack';
+
+const builder = new PyroBuilder({
+    globs    : [
+        'addons/shared/*/*',
+        'addons/*/*',
+        'core/*/*'
+    ],
+    rootPath : __dirname
+})
+
+// init()
+// 1: will find and register all found addons
+// 2: setup webpack configuration, including addons
+// 3: returns the Webpacker (webpack-chain) and addon instances array
+const { wp, env, addons } = builder.init();
+
+// At this point you can use 'wp' (Webpacker/webpack-chain) to add or alter any configuration made
+
+// change the output dir?
+wp.output.path('public/some-other-dir');
+
+// add postcss loader before sass loader in the sass loader use array?
+wp.module.rule('scss')
+    .use('postcss-loader')
+    .loader('postcss-loader')
+    .before('sass-loader')
+    .options({
+        preserve  : true,
+        whitespace: false
+    })
+
+// modify module rule options?
+wp.module.rule('babel').use('babel-loader').tap(options => {
+    options.plugins.push(['someplugin'])
+    return options
+})
+
+// Webpacker also comes with some extra features.
+// Example: to use @import "~accelerant-theme/.." in SCSS instead of relative paths.
+wp.ensureLink(path('core/pyrocms/accelerant-theme'), path('node_modules/accelerant-theme'));
+
+// At the end of the script transform into a webpack configuration object and export it
+const config = wp.toConfig();
+
+export default config;
+```
