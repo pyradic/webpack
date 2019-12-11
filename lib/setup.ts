@@ -1,9 +1,10 @@
 import { helpers, loaders, plugins, rules, Webpacker } from '@radic/webpacker';
-import { join, resolve } from 'path';
-import { existsSync } from 'fs';
-import { JsonPlugin } from './JsonPlugin';
-import { PyroBuilder } from './PyroBuilder';
-import { map2object } from './utils';
+import { join, resolve }                               from 'path';
+import { existsSync }                                  from 'fs';
+import { JsonPlugin }                                  from './JsonPlugin';
+import { PyroBuilder }                                 from './PyroBuilder';
+import { map2object }                                  from './utils';
+import ExtraTemplatedPathsPlugin                       from './ExtraTemplatedPathsPlugin';
 
 export interface SetupBaseOptions {
     mode: 'development' | 'production'
@@ -134,7 +135,7 @@ export function setupBase(options: SetupBaseOptions) {
         ENV          : process.env.NODE_ENV,
         NAMESPACE    : namespace,
         'process.env': {
-            NODE_ENV: `"#{process.env.NODE_ENV}"`
+            NODE_ENV: `"#{process.env.NODE_ENV}"`,
         }
     } as any);
 
@@ -184,15 +185,26 @@ export function setupWebpacker(builder: PyroBuilder) {
         template: resolve(__dirname, '../lib/index.html'),
         filename: 'index.html'
     })
-    plugins.extraTemplatedPaths(wp, {
+
+    wp.plugin('templated-path').use(ExtraTemplatedPathsPlugin, [{
         templates: {
             addon: (c, p) => {
-                let addon = addons.find(a => a.exportName === c.chunkName);
+                let addon = addons.find(a => a.exportNames.includes(c.chunkName));
                 if ( !addon ) {
                     return false;
                 }
                 if ( !p.hasArg ) {
                     return addon.path;
+                }
+                // @todo fix this properly, this is just a quick fix
+                if(p.arg === 'exportName' && addon.exportName !== c.chunkName){
+                    // suffixed
+                    if(c.chunkName.startsWith(addon.exportName)){
+                        let suffix = c.chunkName.replace(addon.exportName)
+                        return c.chunkName;
+                    } else {
+                        throw new Error('Super duper invalid extra templated addon path in setuyp.ts')
+                    }
                 }
                 if ( typeof addon[ p.arg ] === 'string' ) {
                     return addon[ p.arg ];
@@ -200,7 +212,24 @@ export function setupWebpacker(builder: PyroBuilder) {
                 return false;
             }
         }
-    });
+    }])
+    // plugins.extraTemplatedPaths(wp, {
+    //     templates: {
+    //         addon: (c, p) => {
+    //             let addon = addons.find(a => a.exportName === c.chunkName);
+    //             if ( !addon ) {
+    //                 return false;
+    //             }
+    //             if ( !p.hasArg ) {
+    //                 return addon.path;
+    //             }
+    //             if ( typeof addon[ p.arg ] === 'string' ) {
+    //                 return addon[ p.arg ];
+    //             }
+    //             return false;
+    //         }
+    //     }
+    // });
 
     rules.expose(wp, 'inversify')
     rules.expose(wp, 'tapable')

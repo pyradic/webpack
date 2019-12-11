@@ -50,7 +50,7 @@ export class PyroBuilder implements PyroBuilderOptions {
     public mode: 'production' | 'development'
     public addons: AddonArray
     public wp: Webpacker
-    public env: any
+    public env: any=env
     public serve: boolean
 
     public globs: string[]
