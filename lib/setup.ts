@@ -5,6 +5,7 @@ import { JsonPlugin }                                  from './JsonPlugin';
 import { PyroBuilder }                                 from './PyroBuilder';
 import { map2object }                                  from './utils';
 import ExtraTemplatedPathsPlugin                       from './ExtraTemplatedPathsPlugin';
+import EntrypointPathPlugin                            from './EntrypointPathPlugin';
 
 export interface SetupBaseOptions {
     mode: 'development' | 'production'
@@ -53,7 +54,7 @@ export function setupBase(options: SetupBaseOptions) {
         .library([ namespace, '[addon:exportName]' ] as any)
         .libraryTarget('window')
         .filename('js/[name].js')
-        .chunkFilename('js/[name]_[addon:exportName].chunk.[id].js')
+        .chunkFilename('js/chunk.[name]_[id].js')
         .path(join(rootPath, 'public/assets'))
         .publicPath('/assets')
     ;
@@ -213,6 +214,7 @@ export function setupWebpacker(builder: PyroBuilder) {
             }
         }
     }])
+    wp.plugin('entrypoint-path').use(EntrypointPathPlugin)
     // plugins.extraTemplatedPaths(wp, {
     //     templates: {
     //         addon: (c, p) => {

@@ -1,3 +1,5 @@
+///<reference path="../types/webpack.d.ts"/>
+
 import { PyroBuilder } from './PyroBuilder';
 
 export * from './env'
