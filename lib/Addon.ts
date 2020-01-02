@@ -1,9 +1,9 @@
-import { join, relative } from 'path';
+import { join, relative }                               from 'path';
 import { AddonEntrypoint, ComposerSchema, PackageJson } from './interfaces';
-import { existsSync } from 'fs';
-import { PyroBuilder } from './PyroBuilder';
-import { EntrypointArray } from './EntrypointArray';
-import { SyncWaterfallHook } from 'tapable';
+import { existsSync }                                   from 'fs';
+import { Builder }                                      from './Builder';
+import { EntrypointArray }                              from './EntrypointArray';
+import { SyncWaterfallHook }                            from 'tapable';
 
 
 export class Addon {
@@ -21,7 +21,7 @@ export class Addon {
 
     entries: any = {}
 
-    constructor(protected readonly builder: PyroBuilder,
+    constructor(protected readonly builder: Builder,
                 public readonly path: string) {
         this.relativePath   = relative(process.cwd(), path)
         this.pkgPath        = join(path, 'package.json');
@@ -45,7 +45,7 @@ export class Addon {
         this.entries[ entryName ] = this.hooks.addEntry.call(entry)
     }
 
-    public runPyroConfig(builder?: PyroBuilder) {
+    public runPyroConfig(builder?: Builder) {
         builder = builder || this.builder;
         if ( this.hasPyroConfig ) {
             let pyroConfig = require(this.pyroConfigPath)
@@ -84,9 +84,9 @@ export class Addon {
 
     get srcPath() {return join(this.path, this.pkg.pyro.srcPath); }
 
-    get mainEntry() { return this.entrypoints.env(this.builder.mode).main()}
+    get mainEntry() { return this.entrypoints.env(this.builder.options.mode).main()}
 
-    get otherEntries() { return this.entrypoints.env(this.builder.mode).suffixed()}
+    get otherEntries() { return this.entrypoints.env(this.builder.options.mode).suffixed()}
 
     get entrypoints() {return new EntrypointArray(...this.pkg.pyro.entrypoints.map(e => ({ ...e, path: join(this.srcPath, e.path) }))) }
 

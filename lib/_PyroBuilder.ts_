@@ -39,13 +39,13 @@ export interface PyroBuilderOptions {
 }
 
 
-export class PyroBuilder implements PyroBuilderOptions {
+export class Builder implements PyroBuilderOptions {
     public readonly hooks = {
         addon      : new SyncHook<Addon>([ 'addon' ]),
         addons     : new SyncWaterfallHook<AddonArray>([ 'addons' ]),
         env        : new SyncHook<any>([ 'env' ]),
         webpacker  : new SyncHook<Webpacker>([ 'webpacker' ]),
-        initialized: new SyncHook<PyroBuilder>([ 'builder' ])
+        initialized: new SyncHook<Builder>([ 'builder' ])
     }
     public mode: 'production' | 'development'
     public addons: AddonArray

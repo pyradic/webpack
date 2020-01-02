@@ -1,9 +1,9 @@
 ///<reference path="../types/webpack.d.ts"/>
 
-import { PyroBuilder } from './PyroBuilder';
+import { Builder } from './Builder';
 
 export * from './env'
-export * from './PyroBuilder'
+export * from './Builder'
 export * from './Addon'
 export * from './AddonFinder'
 export * from './AddonArray'
@@ -16,4 +16,4 @@ export * from './generateStreamsTypings'
 export * from './generatePlatformTypings'
 
 
-export default PyroBuilder
+export default Builder
