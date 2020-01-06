@@ -86,6 +86,9 @@ class Webpack
         $package = $this->findPackage($name);
         $entries = $package->getEntries();
         $entry   = $suffix === null ? $entries->main() : $entries->suffix($suffix);
+        if(!$entry){
+            throw new \RuntimeException("Could not find entry [{$name}]");
+        }
         $this->enabledEntries->add($entry);
         return $this;
     }
