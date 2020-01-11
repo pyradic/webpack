@@ -97,11 +97,7 @@ export class Builder {
     }
 
     protected runCustomAddonConfigs() {
-        for ( const addon of this.addons ) {
-            if ( addon.hasPyroConfig ) {
-                addon.runPyroConfig(this);
-            }
-        }
+        this.addons.forEach(a => a.hasPyroConfig ? a.runPyroConfig(this) : null);
     }
 
 

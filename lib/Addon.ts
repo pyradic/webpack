@@ -9,21 +9,21 @@ import { SyncWaterfallHook }                            from 'tapable';
 export class Addon {
     public readonly hooks = {
         addEntry: new SyncWaterfallHook<AddonEntrypoint>([ 'entry' ]),
-        toObject: new SyncWaterfallHook<any>([ 'obj' ])
-    }
+        toObject: new SyncWaterfallHook<any>([ 'obj' ]),
+    };
     public pkg: PackageJson;
-    public composer: ComposerSchema
+    public composer: ComposerSchema;
     public readonly pkgPath: string;
     public readonly composerPath: string;
     public readonly relativePath: string;
     public readonly pyroConfigPath: string;
-    sorted?: number
+    sorted?: number;
 
-    entries: any = {}
+    entries: any = {};
 
     constructor(protected readonly builder: Builder,
                 public readonly path: string) {
-        this.relativePath   = relative(process.cwd(), path)
+        this.relativePath   = relative(process.cwd(), path);
         this.pkgPath        = join(path, 'package.json');
         this.composerPath   = join(path, 'composer.json');
         this.pyroConfigPath = join(path, 'pyro.config.ts');
@@ -37,30 +37,32 @@ export class Addon {
         }
     }
 
-    protected relative(path: string) {return relative(process.cwd(), path)}
+    protected relative(path: string) {return relative(process.cwd(), path);}
 
     public addEntry(entryName: string, entryData: { scripts: [], styles: [] }) {
-        let entry                 = (entryName === this.exportName ? this.mainEntry : this.otherEntries.findSuffixed(this, entryName)) as AddonEntrypoint
-        entry                     = { ...entry, ...entryData }
-        this.entries[ entryName ] = this.hooks.addEntry.call(entry)
+        let entry                 = (entryName === this.exportName ? this.mainEntry : this.otherEntries.findSuffixed(this, entryName)) as AddonEntrypoint;
+        entry                     = { ...entry, ...entryData };
+        this.entries[ entryName ] = this.hooks.addEntry.call(entry);
     }
 
     public runPyroConfig(builder?: Builder) {
         builder = builder || this.builder;
         if ( this.hasPyroConfig ) {
-            let pyroConfig = require(this.pyroConfigPath)
+            let fn;
+            let pyroConfig = fn = require(this.pyroConfigPath);
             if ( typeof pyroConfig === 'function' ) {
-                pyroConfig(builder)
+                fn = pyroConfig;
             } else if ( 'default' in pyroConfig ) {
-                pyroConfig.default(builder);
+                fn = pyroConfig.default;
             } else if ( 'configure' in pyroConfig ) {
-                pyroConfig.configure(builder)
+                fn = pyroConfig.configure;
             }
+            fn.call(this, builder);
         }
         return this;
     }
 
-    get hasPyroConfig(): boolean {return existsSync(this.pyroConfigPath)}
+    get hasPyroConfig(): boolean {return existsSync(this.pyroConfigPath);}
 
     get name(): string { return this.pkg.name; }
 
@@ -72,29 +74,29 @@ export class Addon {
 
     get lastNameSnake(): string {return this.lastName.replace(/-/g, '_');}
 
-    get exportName(): string {return this.firstNameSnake + '__' + this.lastNameSnake }
+    get exportName(): string {return this.firstNameSnake + '__' + this.lastNameSnake; }
 
     get exportNames(): string[] {
         let names = [ this.exportName ];
         if ( this.otherEntries.length > 0 ) {
-            this.otherEntries.forEach(entry => names.push(this.exportName + entry.suffix))
+            this.otherEntries.forEach(entry => names.push(this.exportName + entry.suffix));
         }
         return names;
     }
 
     get srcPath() {return join(this.path, this.pkg.pyro.srcPath); }
 
-    get mainEntry() { return this.entrypoints.env(this.builder.options.mode).main()}
+    get mainEntry() { return this.entrypoints.env(this.builder.options.mode).main();}
 
-    get otherEntries() { return this.entrypoints.env(this.builder.options.mode).suffixed()}
+    get otherEntries() { return this.entrypoints.env(this.builder.options.mode).suffixed();}
 
-    get entrypoints() {return new EntrypointArray(...this.pkg.pyro.entrypoints.map(e => ({ ...e, path: join(this.srcPath, e.path) }))) }
+    get entrypoints() {return new EntrypointArray(...this.pkg.pyro.entrypoints.map(e => ({ ...e, path: join(this.srcPath, e.path) }))); }
 
     getSrcPath(...parts: string[]) {return join(this.srcPath, ...parts); }
 
     getPath(...parts: string[]) {return join(this.path, ...parts); }
 
-    getRPath(...parts: string[]) { return join(this.relativePath, ...parts) }
+    getRPath(...parts: string[]) { return join(this.relativePath, ...parts); }
 
     toObject() {
         let obj = {
@@ -112,10 +114,10 @@ export class Addon {
             pyroConfigPath: this.relative(this.pyroConfigPath),
             path          : this.relative(this.path),
             sorted        : this.sorted,
-            entries       : this.entries
-        }
+            entries       : this.entries,
+        };
 
-        return this.hooks.toObject.call(obj)
+        return this.hooks.toObject.call(obj);
     }
 
 }

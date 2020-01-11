@@ -29,8 +29,8 @@ export function setupBase(options: BuilderOptions) {
     });
 
     wp.module.rule('babel').test(/\.(js|mjs|jsx)$/).exclude.add(file => (
-        /node_modules/.test(file) &&
-        !/\.vue\.js/.test(file)
+        /node_modules/.test(file)
+        && !/\.vue\.js/.test(file)
     ));
     wp.module.rule('typescript').test(/\.(ts|tsx)$/).exclude.add(/node_modules/);
 
@@ -100,7 +100,7 @@ export function setupBase(options: BuilderOptions) {
         'jquery'                : 'jQuery',
         'vue'                   : 'Vue',
         'vue-class-component'   : 'VueClassComponent',
-        'vue-property-decorator': 'vue-property-decorator',
+        'vue-property-decorator': 'VuePropertyDecorator',
         'bootstrap'             : 'jQuery',
     });
 
