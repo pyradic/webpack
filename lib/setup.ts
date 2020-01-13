@@ -44,7 +44,7 @@ export function setupBase(options: BuilderOptions) {
         .filename('js/[name].js')
         .chunkFilename('js/[entrypoint].chunk.[contenthash].js')
         .path(join(rootPath, outputPath))
-        .publicPath('/assets')
+        .publicPath('/assets/')
         .pathinfo(wp.isDev)
     ;
 
