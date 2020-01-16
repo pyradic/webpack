@@ -35,7 +35,6 @@ class Package implements \ArrayAccess
     protected $srcPath;
     /** @var string */
     protected $sorted;
-
     /** @var string */
     protected $composerName;
     /** @var string */
@@ -68,6 +67,7 @@ class Package implements \ArrayAccess
     {
 
     }
+
 
     public function hasAddon()
     {

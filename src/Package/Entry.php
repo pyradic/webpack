@@ -27,6 +27,21 @@ class Entry
     /** @var \Illuminate\Support\Collection|string[]|array */
     protected $styles;
 
+    /** @var bool  */
+    protected $autoload=false;
+
+    public function isAutoload()
+    {
+        return $this->autoload;
+    }
+
+    public function setAutoload($autoload)
+    {
+        $this->autoload = $autoload;
+        return $this;
+    }
+
+
     public function __construct(Package $package)
     {
         $this->package = $package;

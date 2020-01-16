@@ -6,6 +6,7 @@ use Collective\Html\HtmlBuilder;
 use InvalidArgumentException;
 use Pyro\Webpack\Package\Entry;
 use Pyro\Webpack\Package\EntryCollection;
+use Pyro\Webpack\Package\Package;
 
 class Webpack
 {
@@ -92,6 +93,30 @@ class Webpack
         $this->enabledEntries->add($entry);
         return $this;
     }
+
+//    protected $skipAutoloadEntries = false;
+//
+//    public function enableAutoloadEntries()
+//    {
+//        if($this->skipAutoloadEntries){
+//            return $this;
+//        }
+//        foreach($this->getAutoloadEntries() as $entry) {
+//                $this->enabledEntries->add($entry);
+//        }
+//        return $this;
+//    }
+//
+//    /**
+//     * @return EntryCollection|Entry[]
+//     */
+//    public function getAutoloadEntries()
+//    {
+//        $entries= $this->packages->map(function(Package $package){
+//            return $package->getEntries()->filter->isAutoload();
+//        })->flatten()->toArray();
+//        return new EntryCollection($entries);
+//    }
 
     public function getEnabledEntries()
     {
