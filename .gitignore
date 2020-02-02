@@ -5,5 +5,5 @@ package-lock.json
 yarn-error.log
 yarn.lock
 test.ts
-dist
+#dist
 /composer.d.ts
