@@ -29,7 +29,8 @@ function setupBase(options) {
             ['import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false }],
         ],
     });
-    wp.module.rule('babel').test(/\.(js|mjs|jsx)$/).exclude.add(/node_modules/);
+    wp.module.rule('babel').test(/\.(js|mjs|jsx)$/).exclude.add(file => (/node_modules/.test(file)
+        && !/\.vue\.js/.test(file)));
     wp.module.rule('typescript').test(/\.(ts|tsx)$/).exclude.add(/node_modules/);
     wp.resolveLoader.symlinks(true);
     wp.resolve.symlinks(true);
@@ -37,9 +38,9 @@ function setupBase(options) {
         .library([namespace, '[addon:exportName]'])
         .libraryTarget('window')
         .filename('js/[name].js')
-        .chunkFilename('js/[entrypoint].chunk.[name].js')
+        .chunkFilename('js/[entrypoint].chunk.[contenthash].js')
         .path(path_1.join(rootPath, outputPath))
-        .publicPath('/assets')
+        .publicPath('/assets/')
         .pathinfo(wp.isDev);
     webpacker_1.rules.css(wp);
     webpacker_1.rules.scss(wp, {
@@ -79,14 +80,16 @@ function setupBase(options) {
     wp.resolve.modules.merge([path_1.resolve(rootPath, 'node_modules')]);
     wp.resolve.alias.merge({
         'jquery$': 'jquery/src/jquery',
-        // 'vue$'                               : 'vue/dist/vue.esm.js',
         'babel-core$': '@babel/core',
+        'node_modules/element-theme-scss/lib': path_1.resolve(rootPath, 'packages/element-ui-theme/lib'),
+        'node_modules/element-theme-scss/src': path_1.resolve(rootPath, 'packages/element-ui-theme/src'),
+        'streams::': path_1.resolve(rootPath, 'vendor/anomaly/streams-platform/resources'),
     });
     wp.externals({
         'jquery': 'jQuery',
         'vue': 'Vue',
         'vue-class-component': 'VueClassComponent',
-        'vue-property-decorator': 'vue-property-decorator',
+        'vue-property-decorator': 'VuePropertyDecorator',
         'bootstrap': 'jQuery',
     });
     webpacker_1.plugins.define(wp, {
@@ -150,19 +153,36 @@ function setupWebpacker(builder) {
         reportFilename: path_1.resolve(options.rootPath, options.outputPath, 'bundle-analyzer.html'),
     });
     webpacker_1.plugins.html(wp, {
-        template: path_1.resolve(__dirname, '../index.html'),
+        template: path_1.resolve(__dirname, '../lib/index.html'),
         filename: 'index.html',
     });
     /* Provides the '[addon:<name>]' tag in output configuration */
     webpacker_1.plugins.extraTemplatedPaths(wp, {
         templates: {
             addon: (c, p) => {
-                let addon = addons.find(a => a.exportName === c.chunkName);
+                let addon = addons.find(a => a.exportNames.includes(c.chunkName));
                 if (!addon) {
+                    if (c.chunkName) {
+                        return c.chunkName;
+                    }
                     return false;
                 }
                 if (!p.hasArg) {
-                    return addon.path;
+                    if (c.chunkName) {
+                        return c.chunkName;
+                    }
+                    return addon.relativePath;
+                }
+                // @todo fix this properly, this is just a quick fix
+                if (p.arg === 'exportName' && addon.exportName !== c.chunkName) {
+                    // suffixed
+                    if (c.chunkName.startsWith(addon.exportName)) {
+                        // let suffix = c.chunkName.replace(addon.exportName)
+                        return c.chunkName;
+                    }
+                    else {
+                        throw new Error('Super duper invalid extra templated addon path in setuyp.ts');
+                    }
                 }
                 if (typeof addon[p.arg] === 'string') {
                     return addon[p.arg];

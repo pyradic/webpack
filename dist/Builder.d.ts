@@ -47,6 +47,7 @@ export declare class Builder {
     env: any;
     options: BuilderOptions;
     constructor(options?: Partial<BuilderOptions>);
+    fixTsConfigPaths(): void;
     init(): this;
     protected initWebpacker(): Webpacker;
     protected initAddon(path: any): Addon;

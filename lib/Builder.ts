@@ -5,6 +5,9 @@ import { setupWebpacker }              from './setup';
 import { Addon }                       from './Addon';
 import { SyncHook, SyncWaterfallHook } from 'tapable';
 import { env }                         from './env';
+import { resolve }                   from 'path';
+import { existsSync, writeFileSync } from 'fs';
+import { ParsedTsconfig }            from 'typescript';
 
 export interface BuilderOptions {
     /**
@@ -66,6 +69,36 @@ export class Builder {
             ...this.options,
             ...options,
         };
+    }
+
+    public fixTsConfigPaths(){
+
+        this.options.finder
+            .find(this.options.globs)
+            .forEach(path => {
+                let tsConfigPath = resolve(path, 'tsconfig.json');
+                if ( !existsSync(tsConfigPath) ) return;
+                let config = require(tsConfigPath);
+                if ( config.extends ) {
+                    const getExtendsPath = (extendsPath) => {
+                        let resolvedPath = resolve(path, extendsPath);
+                        if ( existsSync(resolvedPath) ) return extendsPath;
+
+                        for ( const _ of extendsPath.split('../') ) {
+                            extendsPath  = extendsPath.replace(/^\.\.\//gmi, '');
+                            resolvedPath = resolve(path, extendsPath);
+                            if ( existsSync(resolvedPath) ) return extendsPath;
+                        }
+                    };
+                    let extendsPath      = getExtendsPath(config.extends);
+                    if ( config.extends !== extendsPath ) {
+                        config.extends = extendsPath;
+                        writeFileSync(tsConfigPath, JSON.stringify(config, null, 4), 'utf8');
+                    }
+                }
+
+                return null;
+            });
     }
 
     public init() {

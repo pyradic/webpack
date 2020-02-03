@@ -7,6 +7,8 @@ const setup_1 = require("./setup");
 const Addon_1 = require("./Addon");
 const tapable_1 = require("tapable");
 const env_1 = require("./env");
+const path_1 = require("path");
+const fs_1 = require("fs");
 class Builder {
     constructor(options = {}) {
         this.hooks = {
@@ -31,6 +33,35 @@ class Builder {
         };
         this.webpackers = [];
         this.options = Object.assign(Object.assign({}, this.options), options);
+    }
+    fixTsConfigPaths() {
+        this.options.finder
+            .find(this.options.globs)
+            .forEach(path => {
+            let tsConfigPath = path_1.resolve(path, 'tsconfig.json');
+            if (!fs_1.existsSync(tsConfigPath))
+                return;
+            let config = require(tsConfigPath);
+            if (config.extends) {
+                const getExtendsPath = (extendsPath) => {
+                    let resolvedPath = path_1.resolve(path, extendsPath);
+                    if (fs_1.existsSync(resolvedPath))
+                        return extendsPath;
+                    for (const _ of extendsPath.split('../')) {
+                        extendsPath = extendsPath.replace(/^\.\.\//gmi, '');
+                        resolvedPath = path_1.resolve(path, extendsPath);
+                        if (fs_1.existsSync(resolvedPath))
+                            return extendsPath;
+                    }
+                };
+                let extendsPath = getExtendsPath(config.extends);
+                if (config.extends !== extendsPath) {
+                    config.extends = extendsPath;
+                    fs_1.writeFileSync(tsConfigPath, JSON.stringify(config, null, 4), 'utf8');
+                }
+            }
+            return null;
+        });
     }
     init() {
         this.addons = this.initAddons();
@@ -57,11 +88,7 @@ class Builder {
         return addons;
     }
     runCustomAddonConfigs() {
-        for (const addon of this.addons) {
-            if (addon.hasPyroConfig) {
-                addon.runPyroConfig(this);
-            }
-        }
+        this.addons.forEach(a => a.hasPyroConfig ? a.runPyroConfig(this) : null);
     }
     toConfig() {
         if (this.webpackers.length === 0) {

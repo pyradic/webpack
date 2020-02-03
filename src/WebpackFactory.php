@@ -5,6 +5,7 @@ namespace Pyro\Webpack;
 use GeneratedHydrator\Configuration;
 use Illuminate\Contracts\Foundation\Application;
 use Laradic\Support\Dot;
+use Pyro\Webpack\Exception\WebpackJsonFileNotFoundException;
 use Pyro\Webpack\Package\Entry;
 use Pyro\Webpack\Package\EntryCollection;
 use Pyro\Webpack\Package\Package;
@@ -62,6 +63,9 @@ class WebpackFactory
     {
         $path = $path ?: $this->app->config->get('webpack.path', 'storage/webpack.json');
         $path = path_is_relative($path) ? base_path($path) : $path;
+        if ( ! file_exists($path)) {
+            throw new WebpackJsonFileNotFoundException($path);
+        }
         $json = file_get_contents($path);
         $data = json_decode($json, true);
 

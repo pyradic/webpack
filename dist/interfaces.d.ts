@@ -18,6 +18,7 @@ export interface PackageJson extends IPackageJson {
             suffix?: string;
             path: string;
             provider: string;
+            autoload?: boolean;
             env?: 'development' | 'production' | 'testing';
         }>;
     };

@@ -10,7 +10,7 @@ class Addon {
         this.path = path;
         this.hooks = {
             addEntry: new tapable_1.SyncWaterfallHook(['entry']),
-            toObject: new tapable_1.SyncWaterfallHook(['obj'])
+            toObject: new tapable_1.SyncWaterfallHook(['obj']),
         };
         this.entries = {};
         this.relativePath = path_1.relative(process.cwd(), path);
@@ -34,16 +34,18 @@ class Addon {
     runPyroConfig(builder) {
         builder = builder || this.builder;
         if (this.hasPyroConfig) {
-            let pyroConfig = require(this.pyroConfigPath);
+            let fn;
+            let pyroConfig = fn = require(this.pyroConfigPath);
             if (typeof pyroConfig === 'function') {
-                pyroConfig(builder);
+                fn = pyroConfig;
             }
             else if ('default' in pyroConfig) {
-                pyroConfig.default(builder);
+                fn = pyroConfig.default;
             }
             else if ('configure' in pyroConfig) {
-                pyroConfig.configure(builder);
+                fn = pyroConfig.configure;
             }
+            fn.call(this, builder);
         }
         return this;
     }
@@ -84,7 +86,7 @@ class Addon {
             pyroConfigPath: this.relative(this.pyroConfigPath),
             path: this.relative(this.path),
             sorted: this.sorted,
-            entries: this.entries
+            entries: this.entries,
         };
         return this.hooks.toObject.call(obj);
     }
