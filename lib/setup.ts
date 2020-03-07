@@ -6,7 +6,7 @@ import { map2object }                         from './utils';
 import EntrypointPathPlugin                   from './EntrypointPathPlugin';
 import { CleanWebpackPlugin, Options }        from 'clean-webpack-plugin';
 
-export function getSetups(options: BuilderOptions){
+export function createSetup(options: BuilderOptions){
     const { mode, namespace, rootPath, outputPath } = options;
     return {
         setupWebpacker():Webpacker{
@@ -111,11 +111,9 @@ export function getSetups(options: BuilderOptions){
                 wp.blocks.rules.typescriptImportPresets.lodash,
             ]);
         },
-        setupOptimisation(wp:Webpacker){},
-        setupOptimisation(wp:Webpacker){},
-        setupOptimisation(wp:Webpacker){},
         setup(){
             const wp = this.setupWebpacker();
+            this.setupCompilers(wp);
         }
     }
 }
