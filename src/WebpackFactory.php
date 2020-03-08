@@ -55,6 +55,7 @@ class WebpackFactory
         $this->buildData($path);
         $this->buildWebpack();
         $this->buildPackages();
+        $this->enableAutoloadEntries();
 
         return $this->webpack;
     }
@@ -131,10 +132,25 @@ class WebpackFactory
     }
 
     /**
+     * if($entry->isAutoload()){
+     * $this->webpack->enableEntry($entry->getName(),$entry->getSuffix());
+     * }
      * @param \Pyro\Webpack\WebpackData|array $addon = \Pyro\Webpack\WebpackDataExample::addonDot()
      */
     protected function buildAddon($addon)
     {
 
+    }
+
+    protected function enableAutoloadEntries()
+    {
+        foreach ($this->webpack->getPackages() as $package) {
+            foreach ($package->getEntries() as $entry) {
+                if ($entry->isAutoload()) {
+                    $this->webpack->enableEntry($entry->getPackage()->getName(), $entry->getSuffix());
+                }
+            }
+        }
+        return $this;
     }
 }
