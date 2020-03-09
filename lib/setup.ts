@@ -101,7 +101,7 @@ export function createSetup(options: BuilderOptions){
                 compilerOptions  : {
                     target        : 'es5' as any,
                     module        : 'esnext' as any,
-                    importHelpers : true,
+                    importHelpers : false,
                     sourceMap     : wp.isDev,
                     removeComments: wp.isProd,
                 },
