@@ -1,4 +1,4 @@
-import { IPackageJson } from 'package-json-type'
+import { IPackageJson } from 'package-json-type';
 
 export interface Entrypoint {
     suffix?: string
@@ -10,25 +10,23 @@ export interface AddonEntrypoint {
     suffix?: string
     path: string
     env?: 'development' | 'production' | 'testing'
-    scripts:string[]
-    styles:string[]
+    scripts: string[]
+    styles: string[]
+}
+
+export interface PackageJsonPyroEntrypoint {
+    type?: 'site' | 'cp'
+    suffix?: string
+    path: string
+    provider: string
+    autoload?: boolean
+    env?: 'development' | 'production' | 'testing'
 }
 
 export interface PackageJson extends IPackageJson {
     pyro?: {
         srcPath: string
-        // entry?: {
-        //     development: string
-        //     production: string
-        //     testing?: string
-        // },
-        entrypoints?: Array<{
-            suffix?: string
-            path: string
-            provider: string
-            autoload?:boolean
-            env?: 'development' | 'production' | 'testing'
-        }>
+        entrypoints?: PackageJsonPyroEntrypoint[]
     }
 }
 
