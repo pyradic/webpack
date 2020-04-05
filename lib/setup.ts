@@ -5,12 +5,15 @@ import { Builder, BuilderOptions }            from './Builder';
 import { map2object }                         from './utils';
 import EntrypointPathPlugin                   from './EntrypointPathPlugin';
 import { CleanWebpackPlugin, Options }        from 'clean-webpack-plugin';
+import { Options as TsImportOptions }         from 'ts-import-plugin/lib';
+import { Options as TypescriptLoaderOptions } from 'ts-loader';
+import tsImportPlugin                         from 'ts-import-plugin';
 
-export function createSetup(options: BuilderOptions){
+export function createSetup(options: BuilderOptions) {
     const { mode, namespace, rootPath, outputPath } = options;
     return {
-        setupWebpacker():Webpacker{
-            const wp                                        = new Webpacker({
+        setupWebpacker(): Webpacker {
+            const wp = new Webpacker({
                 mode       : mode,
                 path       : rootPath,
                 contextPath: rootPath,
@@ -61,10 +64,10 @@ export function createSetup(options: BuilderOptions){
 
             return wp;
         },
-        setupOptimisation(wp:Webpacker){},
-        setupRules(wp:Webpacker){},
-        setupPlugins(wp:Webpacker){},
-        setupCompilers(wp:Webpacker){
+        setupOptimisation(wp: Webpacker) {},
+        setupRules(wp: Webpacker) {},
+        setupPlugins(wp: Webpacker) {},
+        setupCompilers(wp: Webpacker) {
 
             wp.settings.set('babel', {
                 babelrc       : false,
@@ -111,11 +114,11 @@ export function createSetup(options: BuilderOptions){
                 wp.blocks.rules.typescriptImportPresets.lodash,
             ]);
         },
-        setup(){
+        setup() {
             const wp = this.setupWebpacker();
             this.setupCompilers(wp);
-        }
-    }
+        },
+    };
 }
 
 export function setupBase(options: BuilderOptions) {
@@ -197,6 +200,26 @@ export function setupBase(options: BuilderOptions) {
         },
     });
 
+    wp.blocks.rules[ 'typescriptImport' as any ] = Webpacker.wrap((wp: Webpacker, importOptions?: Partial<TsImportOptions> | Array<Partial<TsImportOptions>>, ruleName = 'typescript') => {
+        // options = [ { libraryName: 'lodash', libraryDirectory: null, camel2DashComponentName: false } ];
+        return wp.module.rule(ruleName)
+            .use('ts-loader')
+            .tap((options: TypescriptLoaderOptions) => {
+                let otherTransformers: any = (): any => ({});
+                if ( typeof options.getCustomTransformers === 'function' ) {
+                    otherTransformers = options.getCustomTransformers;
+                }
+                options.getCustomTransformers = (...params) => {
+                    let { before, after, afterDeclarations } = otherTransformers(...params);
+                    return {
+                        before           : [ ...(before || []), tsImportPlugin(importOptions) ],
+                        after            : [ ...(after || []) ],
+                        afterDeclarations: [ ...(afterDeclarations || []) ],
+                    };
+                };
+                return options;
+            });
+    });
     wp.blocks.rules.typescriptImport(wp, [
         wp.blocks.rules.typescriptImportPresets.lodash,
     ]);

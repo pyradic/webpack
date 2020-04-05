@@ -69,4 +69,12 @@ class PackageCollection extends Collection
         return new Collection($this->items);
     }
 
+    /**
+     * @return $this
+     */
+    public function sorted()
+    {
+        return $this->sortBy->getSorted();
+    }
+
 }

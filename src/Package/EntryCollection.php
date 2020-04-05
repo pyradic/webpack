@@ -22,6 +22,19 @@ class EntryCollection extends \Illuminate\Support\Collection
     }
 
     /**
+     * @param Entry|string $entry
+     *
+     * @return bool
+     */
+    public function has($entry)
+    {
+        if($entry instanceof Entry){
+            $entry = $entry->getName();
+        }
+        return parent::has($entry);
+    }
+
+    /**
      * @return Entry
      */
     public function main()

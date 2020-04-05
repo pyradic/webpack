@@ -87,7 +87,7 @@ class Webpack
         $package = $this->findPackage($name);
         $entries = $package->getEntries();
         $entry   = $suffix === null ? $entries->main() : $entries->suffix($suffix);
-        if(!$entry){
+        if ( ! $entry) {
             throw new \RuntimeException("Could not find entry [{$name}]");
         }
         $this->enabledEntries->add($entry);
@@ -144,6 +144,23 @@ class Webpack
 
     public function renderScripts()
     {
+//        $scripts = $this->enabledEntries
+//            ->toPackages()
+//            ->unique()
+//            ->sorted()
+//            ->map(function (Package $package) {
+//                return $package->getEntries()->filter(function (Entry $entry) {
+//                    return $this->enabledEntries->has($entry);
+//                })->sorted();
+//            })
+//            ->flatten()
+//            ->map->getScripts()
+//            ->flatten()
+//            ->map(function ($script) {
+//                return $this->html->script($this->getPublicPath($script));
+//            })
+//            ->cast('string')
+//            ->implode(PHP_EOL);
         $scripts = $this->enabledEntries->sorted()->map->getScripts()->flatten()->map(function ($script) {
             return $this->html->script($this->getPublicPath($script));
         })->cast('string')->implode(PHP_EOL);
@@ -160,7 +177,7 @@ class Webpack
 
     public function renderProviders()
     {
-        $p         = $this->getEnabledEntries()->filter->hasProvider()->map->getProvider()->map(function ($provider, $exportName) {
+        $p         = $this->getEnabledEntries()->sorted()->filter->hasProvider()->map->getProvider()->map(function ($provider, $exportName) {
             $namespace = $this->getNamespace();
             return "{$namespace}.{$exportName}.{$provider}";
         })->values()->implode(', ');
