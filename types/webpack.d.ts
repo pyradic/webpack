@@ -1,5 +1,5 @@
 // noinspection ES6UnusedImports
-import webpack, { ChunkTemplateHooks, compilation }                    from 'webpack';
+import webpack, {  ChunkTemplateHooks, compilation }             from 'webpack';
 import { HookMap, SyncBailHook, SyncHook, SyncWaterfallHook, Tapable } from 'tapable';
 import * as acorn                                                      from 'acorn';
 
@@ -76,14 +76,15 @@ declare module 'webpack' {
         }
 
         interface MainTemplateHooks {
+            jsonpScript?: SyncWaterfallHook<string, Chunk, string>;
+            requireExtensions: SyncWaterfallHook<string, Chunk, string>;
+            requireEnsure: SyncWaterfallHook<string, Chunk, string>;
+            localVars: SyncWaterfallHook<string, Chunk, string>;
             renderManifest: SyncWaterfallHook
             modules: SyncWaterfallHook
             moduleObj: SyncWaterfallHook
-            requireEnsure: SyncWaterfallHook
             bootstrap: SyncWaterfallHook
-            localVars: SyncWaterfallHook
             require: SyncWaterfallHook
-            requireExtensions: SyncWaterfallHook
             beforeStartup: SyncWaterfallHook
             startup: SyncWaterfallHook
             render: SyncWaterfallHook
@@ -97,7 +98,6 @@ declare module 'webpack' {
             globalHashPaths: SyncWaterfallHook
             globalHash: SyncBailHook
             hotBootstrap: SyncWaterfallHook
-            jsonpScript: SyncWaterfallHook
         }
 
         interface MyMainTemplate extends Tapable, compilation.MainTemplate {

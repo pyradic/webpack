@@ -9,118 +9,6 @@ import { Options as TsImportOptions }         from 'ts-import-plugin/lib';
 import { Options as TypescriptLoaderOptions } from 'ts-loader';
 import tsImportPlugin                         from 'ts-import-plugin';
 
-export function createSetup(options: BuilderOptions) {
-    const { mode, namespace, rootPath, outputPath } = options;
-    return {
-        setupWebpacker(): Webpacker {
-            const wp = new Webpacker({
-                mode       : mode,
-                path       : rootPath,
-                contextPath: rootPath,
-                sourceMap  : mode === 'development',
-            });
-
-            wp.resolveLoader.symlinks(true);
-            wp.resolve.symlinks(true);
-
-
-            wp.output
-                .library([ namespace, '[addon:exportName]' ] as any)
-                .libraryTarget('window')
-                .filename('js/[name].js')
-                .chunkFilename('js/[entrypoint].chunk.[contenthash].js')
-                .path(join(rootPath, outputPath))
-                .publicPath('/assets/')
-                .pathinfo(wp.isDev)
-            ;
-
-            plugins.define(wp, {
-                DEV          : wp.isDev,
-                PROD         : wp.isProd,
-                HOT          : wp.isHot,
-                ENV          : process.env.NODE_ENV,
-                NAMESPACE    : namespace,
-                'process.env': {
-                    NODE_ENV: `"#{process.env.NODE_ENV}"`,
-                },
-            } as any);
-
-            wp.resolve.modules.merge([ resolve(rootPath, 'node_modules') ]);
-            wp.resolve.alias.merge({
-                'jquery$'                            : 'jquery/src/jquery',
-                'babel-core$'                        : '@babel/core',
-                'node_modules/element-theme-scss/lib': resolve(rootPath, 'packages/element-ui-theme/lib'),
-                'node_modules/element-theme-scss/src': resolve(rootPath, 'packages/element-ui-theme/src'),
-                'streams::'                          : resolve(rootPath, 'vendor/anomaly/streams-platform/resources'),
-            });
-
-            wp.externals({
-                'jquery'                : 'jQuery',
-                'vue'                   : 'Vue',
-                'vue-class-component'   : 'VueClassComponent',
-                'vue-property-decorator': 'VuePropertyDecorator',
-                'bootstrap'             : 'jQuery',
-            });
-
-            return wp;
-        },
-        setupOptimisation(wp: Webpacker) {},
-        setupRules(wp: Webpacker) {},
-        setupPlugins(wp: Webpacker) {},
-        setupCompilers(wp: Webpacker) {
-
-            wp.settings.set('babel', {
-                babelrc       : false,
-                configFile    : false,
-                cacheDirectory: false, //wp.isDev,
-                compact       : wp.isProd,
-                sourceMaps    : wp.isDev,
-                comments      : wp.isDev,
-                presets       : [ [ '@vue/babel-preset-app' ] ],
-                plugins       : [
-                    [ 'import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false } ],
-                ],
-            });
-
-            wp.module.rule('babel').test(/\.(js|mjs|jsx)$/).exclude.add(file => (
-                /node_modules/.test(file)
-                && !/\.vue\.js/.test(file)
-            ));
-            wp.module.rule('typescript').test(/\.(ts|tsx)$/).exclude.add(/node_modules/);
-
-
-            rules.babel(wp);
-            // rules.cache(wp, {}, 'typescript')
-            // rules.thread(wp, {}, 'typescript')
-            // wp.module.rule('typescript').use('save-content-loader').loader(resolve(rootPath, 'save-content-loader')).options({ name: 'babel' });
-            rules.babel(wp, {}, 'typescript');
-            // wp.module.rule('typescript').use('save-content-loader').loader(resolve(rootPath, 'save-content-loader')).options({    name: 'typescript',});
-            rules.typescript(wp, {
-                appendTsxSuffixTo: [ /.vue$/ ],
-                configFile       : 'tsconfig.json',
-                transpileOnly    : true,
-                // experimentalWatchApi: true,
-                // happyPackMode       : true,
-                compilerOptions  : {
-                    target        : 'es5' as any,
-                    module        : 'esnext' as any,
-                    importHelpers : false,
-                    sourceMap     : wp.isDev,
-                    removeComments: wp.isProd,
-                },
-            });
-
-            wp.blocks.rules.typescriptImport(wp, [
-                wp.blocks.rules.typescriptImportPresets.lodash,
-            ]);
-        },
-        setup() {
-            const wp = this.setupWebpacker();
-            this.setupCompilers(wp);
-        },
-    };
-}
-
 export function setupBase(options: BuilderOptions) {
     const { mode, namespace, rootPath, outputPath } = options;
     const wp                                        = new Webpacker({
@@ -493,3 +381,117 @@ export function setupWebpacker(builder: Builder) {
 
     return wp;
 }
+
+
+
+// export function createSetup(options: BuilderOptions) {
+//     const { mode, namespace, rootPath, outputPath } = options;
+//     return {
+//         setupWebpacker(): Webpacker {
+//             const wp = new Webpacker({
+//                 mode       : mode,
+//                 path       : rootPath,
+//                 contextPath: rootPath,
+//                 sourceMap  : mode === 'development',
+//             });
+//
+//             wp.resolveLoader.symlinks(true);
+//             wp.resolve.symlinks(true);
+//
+//
+//             wp.output
+//                 .library([ namespace, '[addon:exportName]' ] as any)
+//                 .libraryTarget('window')
+//                 .filename('js/[name].js')
+//                 .chunkFilename('js/[entrypoint].chunk.[contenthash].js')
+//                 .path(join(rootPath, outputPath))
+//                 .publicPath('/assets/')
+//                 .pathinfo(wp.isDev)
+//             ;
+//
+//             plugins.define(wp, {
+//                 DEV          : wp.isDev,
+//                 PROD         : wp.isProd,
+//                 HOT          : wp.isHot,
+//                 ENV          : process.env.NODE_ENV,
+//                 NAMESPACE    : namespace,
+//                 'process.env': {
+//                     NODE_ENV: `"#{process.env.NODE_ENV}"`,
+//                 },
+//             } as any);
+//
+//             wp.resolve.modules.merge([ resolve(rootPath, 'node_modules') ]);
+//             wp.resolve.alias.merge({
+//                 'jquery$'                            : 'jquery/src/jquery',
+//                 'babel-core$'                        : '@babel/core',
+//                 'node_modules/element-theme-scss/lib': resolve(rootPath, 'packages/element-ui-theme/lib'),
+//                 'node_modules/element-theme-scss/src': resolve(rootPath, 'packages/element-ui-theme/src'),
+//                 'streams::'                          : resolve(rootPath, 'vendor/anomaly/streams-platform/resources'),
+//             });
+//
+//             wp.externals({
+//                 'jquery'                : 'jQuery',
+//                 'vue'                   : 'Vue',
+//                 'vue-class-component'   : 'VueClassComponent',
+//                 'vue-property-decorator': 'VuePropertyDecorator',
+//                 'bootstrap'             : 'jQuery',
+//             });
+//
+//             return wp;
+//         },
+//         setupOptimisation(wp: Webpacker) {},
+//         setupRules(wp: Webpacker) {},
+//         setupPlugins(wp: Webpacker) {},
+//         setupCompilers(wp: Webpacker) {
+//
+//             wp.settings.set('babel', {
+//                 babelrc       : false,
+//                 configFile    : false,
+//                 cacheDirectory: false, //wp.isDev,
+//                 compact       : wp.isProd,
+//                 sourceMaps    : wp.isDev,
+//                 comments      : wp.isDev,
+//                 presets       : [ [ '@vue/babel-preset-app' ] ],
+//                 plugins       : [
+//                     [ 'import', { libraryName: 'lodash', libraryDirectory: '', camel2DashComponentName: false } ],
+//                 ],
+//             });
+//
+//             wp.module.rule('babel').test(/\.(js|mjs|jsx)$/).exclude.add(file => (
+//                 /node_modules/.test(file)
+//                 && !/\.vue\.js/.test(file)
+//             ));
+//             wp.module.rule('typescript').test(/\.(ts|tsx)$/).exclude.add(/node_modules/);
+//
+//
+//             rules.babel(wp);
+//             // rules.cache(wp, {}, 'typescript')
+//             // rules.thread(wp, {}, 'typescript')
+//             // wp.module.rule('typescript').use('save-content-loader').loader(resolve(rootPath, 'save-content-loader')).options({ name: 'babel' });
+//             rules.babel(wp, {}, 'typescript');
+//             // wp.module.rule('typescript').use('save-content-loader').loader(resolve(rootPath, 'save-content-loader')).options({    name: 'typescript',});
+//             rules.typescript(wp, {
+//                 appendTsxSuffixTo: [ /.vue$/ ],
+//                 configFile       : 'tsconfig.json',
+//                 transpileOnly    : true,
+//                 // experimentalWatchApi: true,
+//                 // happyPackMode       : true,
+//                 compilerOptions  : {
+//                     target        : 'es5' as any,
+//                     module        : 'esnext' as any,
+//                     importHelpers : false,
+//                     sourceMap     : wp.isDev,
+//                     removeComments: wp.isProd,
+//                 },
+//             });
+//
+//             wp.blocks.rules.typescriptImport(wp, [
+//                 wp.blocks.rules.typescriptImportPresets.lodash,
+//             ]);
+//         },
+//         setup() {
+//             const wp = this.setupWebpacker();
+//             this.setupCompilers(wp);
+//         },
+//     };
+// }
