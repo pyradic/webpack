@@ -161,7 +161,7 @@ class Webpack
 //            })
 //            ->cast('string')
 //            ->implode(PHP_EOL);
-        $scripts = $this->enabledEntries->sorted()->map->getScripts()->flatten()->map(function ($script) {
+        $scripts = $this->enabledEntries->sorted()->map->getScripts()->flatten()->unique()->map(function ($script) {
             return $this->html->script($this->getPublicPath($script));
         })->cast('string')->implode(PHP_EOL);
         return $scripts;
