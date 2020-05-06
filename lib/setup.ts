@@ -343,9 +343,9 @@ export function setupWebpacker(builder: Builder) {
         wp.devServer
             .contentBase(join(options.rootPath, options.outputPath))
             .overlay(true)
-            .inline(true);
+            .inline(true)
+            .writeToDisk(true);
 
-        wp.devServer.set('writeToDisk', true);
         wp.optimization.minimize(false);
     }
 
