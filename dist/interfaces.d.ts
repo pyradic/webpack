@@ -11,16 +11,18 @@ export interface AddonEntrypoint {
     scripts: string[];
     styles: string[];
 }
+export interface PackageJsonPyroEntrypoint {
+    type?: 'site' | 'cp';
+    suffix?: string;
+    path: string;
+    provider: string;
+    autoload?: boolean;
+    env?: 'development' | 'production' | 'testing';
+}
 export interface PackageJson extends IPackageJson {
     pyro?: {
         srcPath: string;
-        entrypoints?: Array<{
-            suffix?: string;
-            path: string;
-            provider: string;
-            autoload?: boolean;
-            env?: 'development' | 'production' | 'testing';
-        }>;
+        entrypoints?: PackageJsonPyroEntrypoint[];
     };
 }
 /**

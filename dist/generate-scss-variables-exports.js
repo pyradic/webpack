@@ -11,13 +11,13 @@ let tasks = [
     {
         typeName: 'PlatformStyleVariables',
         from: [
-            'packages/pyro/platform/lib/styling/base.scss'
+            'packages/pyro/platform/lib/styling/base.scss',
         ],
         imports: [
-            'packages/pyro/platform/lib/styling/base.scss'
+            'packages/pyro/platform/lib/styling/base.scss',
         ],
         to: 'packages/pyro/platform/lib/styling/export.scss',
-        exclude: []
+        exclude: [],
     },
     {
         typeName: 'AdminThemeStyleVariables',
@@ -26,11 +26,11 @@ let tasks = [
             'addons/shared/pyro/admin-theme/lib/styling/_variables.scss',
         ],
         imports: [
-            'addons/shared/pyro/admin-theme/lib/styling/_base.scss'
+            'addons/shared/pyro/admin-theme/lib/styling/_base.scss',
         ],
         to: 'addons/shared/pyro/admin-theme/lib/styling/export.scss',
-        exclude: [/material-colors/]
-    }
+        exclude: [/material-colors/],
+    },
 ];
 tasks = tasks.map(task => lodash_1.merge({ from: [], imports: [], exclude: [] }, task));
 const exp = () => /^[\s\t]*\$(.*?)[\s\t]*?:/gm;
@@ -80,14 +80,14 @@ ${exports}
     console.log(`Written export to: ${to}`);
     let platformPath = ensureAbsolute('packages/pyro/platform');
     if (task.typeName) {
-        let configImport = to.startsWith(platformPath) ? '../classes/Config' : '@pyro/platform';
+        let configImport = to.startsWith(platformPath) ? '../classes/Config' : '@crvs/platform';
         let typeResult = [
             `import {Config} from '${configImport}';`,
             `export interface ${task.typeName} {`,
             `${vars.map(v => `\t'${v}'?:string`).join('\n')}`,
             `}`,
             `import _styleVars from  './export.scss'`,
-            `export const styleVars = Config.proxied<${task.typeName}>(_styleVars)`
+            `export const styleVars = Config.proxied<${task.typeName}>(_styleVars)`,
         ].join('\n');
         let typeTo = task.typeTo ? ensureAbsolute(task.typeTo) : to.replace(path_1.extname(to), '.ts');
         fs_1.writeFileSync(typeTo, typeResult, 'utf8');

@@ -9,6 +9,7 @@ const JsonPlugin_1 = require("./JsonPlugin");
 const utils_1 = require("./utils");
 const EntrypointPathPlugin_1 = __importDefault(require("./EntrypointPathPlugin"));
 const clean_webpack_plugin_1 = require("clean-webpack-plugin");
+const ts_import_plugin_1 = __importDefault(require("ts-import-plugin"));
 function setupBase(options) {
     const { mode, namespace, rootPath, outputPath } = options;
     const wp = new webpacker_1.Webpacker({
@@ -44,9 +45,7 @@ function setupBase(options) {
         .pathinfo(wp.isDev);
     webpacker_1.rules.css(wp);
     webpacker_1.rules.scss(wp, {
-        scss: {
-            implementation: require('sass'),
-        },
+        scss: { implementation: require('sass') },
     });
     webpacker_1.rules.stylus(wp);
     webpacker_1.rules.images(wp);
@@ -73,6 +72,26 @@ function setupBase(options) {
             sourceMap: wp.isDev,
             removeComments: wp.isProd,
         },
+    });
+    wp.blocks.rules['typescriptImport'] = webpacker_1.Webpacker.wrap((wp, importOptions, ruleName = 'typescript') => {
+        // options = [ { libraryName: 'lodash', libraryDirectory: null, camel2DashComponentName: false } ];
+        return wp.module.rule(ruleName)
+            .use('ts-loader')
+            .tap((options) => {
+            let otherTransformers = () => ({});
+            if (typeof options.getCustomTransformers === 'function') {
+                otherTransformers = options.getCustomTransformers;
+            }
+            options.getCustomTransformers = (...params) => {
+                let { before, after, afterDeclarations } = otherTransformers(...params);
+                return {
+                    before: [...(before || []), ts_import_plugin_1.default(importOptions)],
+                    after: [...(after || [])],
+                    afterDeclarations: [...(afterDeclarations || [])],
+                };
+            };
+            return options;
+        });
     });
     wp.blocks.rules.typescriptImport(wp, [
         wp.blocks.rules.typescriptImportPresets.lodash,
@@ -113,25 +132,6 @@ function setupBase(options) {
     })
         .namedChunks(true)
         .namedModules(true);
-    if (wp.isProd) {
-        wp.settings.sourceMap = false;
-        wp.devtool(false);
-        wp.mode('production');
-        wp.optimization.minimize(true);
-        webpacker_1.helpers.minimizer(wp, {
-            terserOptions: {
-                keep_classnames: /.*ServiceProvider.*/,
-                keep_fnames: /.*ServiceProvider.*/,
-            },
-        });
-        /* replace style-loader with MiniCssExtract.loader */
-        webpacker_1.helpers.replaceStyleLoader(wp, 'css');
-        webpacker_1.helpers.replaceStyleLoader(wp, 'scss');
-        webpacker_1.plugins.loaderOptions(wp, {
-            minimize: true,
-        });
-        // helpers.minimizer(wp)
-    }
     webpacker_1.plugins.miniCssExtract(wp, {
         filename: 'css/[name].css',
         chunkFilename: 'css/[name].chunk.[id].css',
@@ -242,14 +242,19 @@ function setupWebpacker(builder) {
                 let entryNames = Object.keys(data);
             },
         }]);
-    //
-    // wp.extendConfig(config => {
-    //     let o          = config.optimization;
-    //     o.chunkIds     = 'named';
-    //     o.moduleIds    = 'named';
-    //     o.namedChunks  = true;
-    //     o.namedModules = true;
-    // });
+    if (wp.isServer) {
+        /* Setup webpack-dev-server */
+        wp.module.rules.delete('source-map-loader');
+        wp.stats(false);
+        webpacker_1.helpers.devServer(wp);
+        webpacker_1.helpers.setServerLocation(wp, options.protocol || 'http', options.host || 'localhost', options.port || 8179);
+        wp.devServer
+            .contentBase(path_1.join(options.rootPath, options.outputPath))
+            .overlay(true)
+            .inline(true)
+            .writeToDisk(true);
+        wp.optimization.minimize(false);
+    }
     if (wp.isDev) {
         wp.devtool('#source-map');
         wp.output
@@ -264,6 +269,23 @@ function setupWebpacker(builder) {
             .devtoolFallbackModuleFilenameTemplate('webpack:///[resource-path]?[hash]');
     }
     if (wp.isProd) {
+        wp.settings.sourceMap = false;
+        wp.devtool(false);
+        wp.mode('production');
+        wp.optimization.minimize(true);
+        webpacker_1.helpers.minimizer(wp, {
+            terserOptions: {
+                keep_classnames: /.*ServiceProvider.*/,
+                keep_fnames: /.*ServiceProvider.*/,
+            },
+        });
+        /* replace style-loader with MiniCssExtract.loader */
+        webpacker_1.helpers.replaceStyleLoader(wp, 'css');
+        webpacker_1.helpers.replaceStyleLoader(wp, 'scss');
+        webpacker_1.plugins.loaderOptions(wp, {
+            minimize: true,
+        });
+        // helpers.minimizer(wp)
         /* Move all common vendor libraries into 1 vendor chunk */
         wp.optimization
             .splitChunks({
@@ -277,19 +299,6 @@ function setupWebpacker(builder) {
             },
         });
     }
-    if (wp.isServer) {
-        /* Setup webpack-dev-server */
-        wp.module.rules.delete('source-map-loader');
-        wp.stats(false);
-        webpacker_1.helpers.devServer(wp);
-        webpacker_1.helpers.setServerLocation(wp, options.protocol || 'http', options.host || 'localhost', options.port || 8179);
-        wp.devServer
-            .contentBase(path_1.join(options.rootPath, options.outputPath))
-            .overlay(true)
-            .inline(true);
-        wp.devServer.set('writeToDisk', true);
-        wp.optimization.minimize(false);
-    }
     /* Handle addons: Adds all addon entrypoints, Adds references to externals */
     for (const addon of addons) {
         let main = addon.entrypoints.env(wp.store.get('mode')).main();
@@ -299,15 +308,6 @@ function setupWebpacker(builder) {
             wp.entry(addon.exportName + entrypoint.suffix).add(entrypoint.path);
             wp.externals(Object.assign(Object.assign({}, wp.get('externals')), { [addon.name + entrypoint.suffix]: [options.namespace, addon.exportName + entrypoint.suffix] }));
         });
-        // if ( addon.isSingle ) {
-        //     wp.entry(addon.entryName).add(addon.entry.development);
-        // } else {
-        //     for ( const entry of addon.entrypoints ) {
-        //         if ( 'env' in entry === false || entry.env === wp.store.get('mode') ) {
-        //             wp.entry(addon.entryName + (entry.suffix || '')).add(entry.path)
-        //         }
-        //     }
-        // }
     }
     return wp;
 }
