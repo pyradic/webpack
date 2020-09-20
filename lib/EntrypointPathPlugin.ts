@@ -63,9 +63,9 @@ export default class EntrypointPathPlugin {
     apply(compiler: Compiler) {
         compiler.hooks.compilation.tap(NAME, (compilation: compilation.Compilation) => {
             let entries         = compilation.entries;
-            const mainTemplate  = compilation.mainTemplate as compilation.MyMainTemplate ;
+            const mainTemplate  = compilation.mainTemplate as any;
             let inChunk         = null;
-            const getEntryPoint = (path, data:ChunkData) => {
+            const getEntryPoint = (path, data: ChunkData) => {
                 if ( !REGEXP_ENTRYPOINT_FOR_TEST.test(path) ) {
                     return path;
                 }
@@ -79,11 +79,11 @@ export default class EntrypointPathPlugin {
 
                 let a = { mainTemplate, compilation, inChunk };
                 try {
-                    if(chunk.getNumberOfGroups && chunk.getNumberOfGroups() > 0){
-                        let chunkGroup = Array.from(data.chunk.groupsIterable)[0];
-                        let parents = chunkGroup.getParents();
-                        if(parents.length > 0){
-                            entrypoint=parents[0].name;
+                    if ( chunk.getNumberOfGroups && chunk.getNumberOfGroups() > 0 ) {
+                        let chunkGroup = Array.from(data.chunk.groupsIterable)[ 0 ];
+                        let parents    = chunkGroup.getParents();
+                        if ( parents.length > 0 ) {
+                            entrypoint = parents[ 0 ].name;
                         }
                     }
 

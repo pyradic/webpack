@@ -1,13 +1,12 @@
 import { AddonArray }                  from './AddonArray';
 import { AddonFinder }                 from './AddonFinder';
-import { Webpacker }                   from '@radic/webpacker';
+import { Webpacker }                   from '@radic/webpacker/lib';
 import { setupWebpacker }              from './setup';
 import { Addon }                       from './Addon';
 import { SyncHook, SyncWaterfallHook } from 'tapable';
 import { env }                         from './env';
-import { resolve }                   from 'path';
-import { existsSync, writeFileSync } from 'fs';
-import { ParsedTsconfig }            from 'typescript';
+import { resolve }                     from 'path';
+import { existsSync, writeFileSync }   from 'fs';
 
 export interface BuilderOptions {
     /**
@@ -71,7 +70,7 @@ export class Builder {
         };
     }
 
-    public fixTsConfigPaths(){
+    public fixTsConfigPaths() {
 
         this.options.finder
             .find(this.options.globs)

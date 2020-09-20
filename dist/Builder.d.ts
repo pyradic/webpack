@@ -4,7 +4,7 @@
 /// <reference types="@radic/webpacker/src/globals" />
 import { AddonArray } from './AddonArray';
 import { AddonFinder } from './AddonFinder';
-import { Webpacker } from '@radic/webpacker';
+import { Webpacker } from '@radic/webpacker/lib';
 import { Addon } from './Addon';
 import { SyncHook, SyncWaterfallHook } from 'tapable';
 export interface BuilderOptions {

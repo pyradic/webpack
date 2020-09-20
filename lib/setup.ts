@@ -1,4 +1,4 @@
-import { helpers, plugins, rules, Webpacker } from '@radic/webpacker';
+import { helpers, plugins, rules, Webpacker } from '@radic/webpacker/lib';
 import { join, resolve }                      from 'path';
 import { JsonPlugin }                         from './JsonPlugin';
 import { Builder, BuilderOptions }            from './Builder';

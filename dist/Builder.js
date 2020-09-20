@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const AddonArray_1 = require("./AddonArray");
 const AddonFinder_1 = require("./AddonFinder");
-const webpacker_1 = require("@radic/webpacker");
+const lib_1 = require("@radic/webpacker/lib");
 const setup_1 = require("./setup");
 const Addon_1 = require("./Addon");
 const tapable_1 = require("tapable");
@@ -99,7 +99,7 @@ class Builder {
         }
     }
     addWebpacker(options) {
-        const wp = new webpacker_1.Webpacker(Object.assign({ mode: this.options.mode }, options));
+        const wp = new lib_1.Webpacker(Object.assign({ mode: this.options.mode }, options));
         this.webpackers.push(wp);
         return wp;
     }
