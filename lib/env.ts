@@ -2,8 +2,8 @@ import { config } from 'dotenv';
 
 const dotenv = config({
     // debug   : false,
-    encoding: 'utf8'
-})
+    encoding: 'utf8',
+});
 
 export type PyroDotEnvPartial = typeof process.env & {
     [ key: string ]: any
@@ -57,7 +57,8 @@ export type PyroDotEnvPartial = typeof process.env & {
     WEBPACK_PROTOCOL?: any
     WEBPACK_HOST?: any
     WEBPACK_PORT?: any
+    WEBPACK_OUTPUT_PATH?: any
 }
 
-export const env:PyroDotEnvPartial = dotenv.parsed as {}
+export const env: PyroDotEnvPartial = dotenv.parsed as {};
 
