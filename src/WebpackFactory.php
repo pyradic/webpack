@@ -40,6 +40,7 @@ class WebpackFactory
     protected function createHydrator($class)
     {
         $configuration = new Configuration($class);
+        $configuration->setGeneratedClassesTargetDir(storage_path('hydrators'));
         $hydratorClass = $configuration->createFactory()->getHydratorClass();
         $hydrator      = new $hydratorClass;
         return $hydrator;
@@ -135,6 +136,7 @@ class WebpackFactory
      * if($entry->isAutoload()){
      * $this->webpack->enableEntry($entry->getName(),$entry->getSuffix());
      * }
+     *
      * @param \Pyro\Webpack\WebpackData|array $addon = \Pyro\Webpack\WebpackDataExample::addonDot()
      */
     protected function buildAddon($addon)
