@@ -337,6 +337,11 @@ export function setupWebpacker(builder: Builder) {
     for ( const addon of addons ) {
         let main = addon.entrypoints.env(wp.store.get('mode')).main();
         wp.entry(addon.exportName).add(main.path);
+        if ( addon.useHMR ) {
+            wp.entry(addon.exportName)
+                .prepend('webpack/hot/only-dev-server')
+                .prepend('webpack-dev-server/client?http://localhost:8079');
+        }
         wp.externals({
             ...wp.get('externals'),
             [ addon.name ]: [ options.namespace, addon.exportName ],

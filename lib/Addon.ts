@@ -18,8 +18,8 @@ export class Addon {
     public readonly relativePath: string;
     public readonly pyroConfigPath: string;
     sorted?: number;
-
-    entries: any = {};
+    useHMR: boolean       = false;
+    entries: any          = {};
 
     constructor(protected readonly builder: Builder,
                 public readonly path: string) {
@@ -28,6 +28,7 @@ export class Addon {
         this.composerPath   = join(path, 'composer.json');
         this.pyroConfigPath = join(path, 'pyro.config.ts');
         this.reloadJSONData();
+        this.useHMR = (this.pkg.pyro.HMR || this.pkg.pyro.hmr);
     }
 
     public reloadJSONData() {
@@ -91,6 +92,7 @@ export class Addon {
     get otherEntries() { return this.entrypoints.env(this.builder.options.mode).suffixed();}
 
     get entrypoints() {return new EntrypointArray(...this.pkg.pyro.entrypoints.map(e => ({ ...e, path: join(this.srcPath, e.path) }))); }
+
 
     getSrcPath(...parts: string[]) {return join(this.srcPath, ...parts); }
 

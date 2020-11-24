@@ -25,6 +25,8 @@ export interface PackageJsonPyroEntrypoint {
 
 export interface PackageJson extends IPackageJson {
     pyro?: {
+        HMR: boolean
+        hmr: boolean
         srcPath: string
         entrypoints?: PackageJsonPyroEntrypoint[]
     }
