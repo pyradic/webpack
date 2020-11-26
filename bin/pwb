@@ -1,0 +1,4 @@
+#!/usr/env/node
+const cli = require(__dirname + '/../dist/cli');
+
+cli();

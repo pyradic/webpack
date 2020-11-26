@@ -16,6 +16,7 @@ export declare class Addon {
     readonly relativePath: string;
     readonly pyroConfigPath: string;
     sorted?: number;
+    useHMR: boolean;
     entries: any;
     constructor(builder: Builder, path: string);
     reloadJSONData(): void;

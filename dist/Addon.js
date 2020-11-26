@@ -12,12 +12,14 @@ class Addon {
             addEntry: new tapable_1.SyncWaterfallHook(['entry']),
             toObject: new tapable_1.SyncWaterfallHook(['obj']),
         };
+        this.useHMR = false;
         this.entries = {};
         this.relativePath = path_1.relative(process.cwd(), path);
         this.pkgPath = path_1.join(path, 'package.json');
         this.composerPath = path_1.join(path, 'composer.json');
         this.pyroConfigPath = path_1.join(path, 'pyro.config.ts');
         this.reloadJSONData();
+        this.useHMR = (this.pkg.pyro.HMR || this.pkg.pyro.hmr);
     }
     reloadJSONData() {
         this.pkg = require(this.pkgPath);

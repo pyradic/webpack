@@ -50,5 +50,6 @@ export declare type PyroDotEnvPartial = typeof process.env & {
     WEBPACK_PROTOCOL?: any;
     WEBPACK_HOST?: any;
     WEBPACK_PORT?: any;
+    WEBPACK_OUTPUT_PATH?: any;
 };
 export declare const env: PyroDotEnvPartial;
