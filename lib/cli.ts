@@ -13,6 +13,7 @@ function getAddons(): Record<string, PackageJson> {
     let dirs   = [
         findUp.sync('addons', { type: 'directory' }),
         findUp.sync('core', { type: 'directory' }),
+        findUp.sync('packages', { type: 'directory' }),
     ];
     for ( const path of dirs ) {
         glob.sync(resolve(path, '**', 'package.json'))

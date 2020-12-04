@@ -23,6 +23,7 @@ function getAddons() {
     let dirs = [
         find_up_1.default.sync('addons', { type: 'directory' }),
         find_up_1.default.sync('core', { type: 'directory' }),
+        find_up_1.default.sync('packages', { type: 'directory' }),
     ];
     for (const path of dirs) {
         glob_1.glob.sync(path_1.resolve(path, '**', 'package.json'))
