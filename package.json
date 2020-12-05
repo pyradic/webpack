@@ -13,6 +13,7 @@
         "build": "tsc --project tsconfig.build.json",
         "watch": "npm run start && tsc --project tsconfig.build.json --watch",
         "clean:build": "rm -rf dist",
+        "clean:unwanted": "rimraf lib/**/*.js*",
         "postinstall": "rm -rf node_modules/@types",
         "clean:yarn": "rm yarn.lock node_modules/",
         "prepare": "npm-run-all clean:build build",
